@@ -361,6 +361,8 @@ NumpadDot::Suspend
 NumpadDel::Suspend
 
 ;Mouse Middle Button Function
+aman the boss 
+
 
 return
 
