@@ -78,9 +78,9 @@ else
 	{
 		KeyPressCount :=1
 	}
-If (KeyPressCount <6)
+If (KeyPressCount <7)
 	{
-		Tooltip, % KeyPressCount
+		Tooltip, %KeyPressCount% `n1.ScreenshotState `n2.Speed/UnRe_state `n3.Copy/Cut_State `n4.Play/Pause_State `n5.MediaKey_State `n6.Exit
 	}
 SetTimer, cKeyPressMonitor, 1000
 return
