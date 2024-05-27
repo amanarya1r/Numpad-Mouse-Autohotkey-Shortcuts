@@ -138,7 +138,7 @@ MButton Up::
 				{
 					Tooltip, %ClickCount%
 				}
-            SetTimer, middlebclickmntr, 300
+            SetTimer, mbclickmonitor4left, 300
         }
     }
 return
@@ -152,22 +152,6 @@ CheckMiddleMouseLongPress:
         MiddleMouseDown := false  ; Reset the state to avoid multiple triggers
         SetTimer, CheckMiddleMouseLongPress, Off
     }
-return
-
-; Timer function to monitor multiple clicks
-middlebclickmntr:
-    If (ClickCount = 1) 
-		{
-        	checkahkguisclipclosernmedia()
-    	} 
-	else if (ClickCount > 1) 
-		{
-    	    MNFunctionmenu()
-        	Menu, MNFunctions, DeleteAll
-    	}
-    ClickCount := 0
-    SetTimer, middlebclickmntr, Off
-    Tooltip,
 return
 
 ; Ensure the script doesn't terminate prematurely
@@ -370,7 +354,7 @@ mbclickmonitor4left:
         	Menu, MNFunctions, DeleteAll
     	}
     ClickCount := 0
-    SetTimer, mbclickmonitor, Off
+    SetTimer, mbclickmonitor4left, Off
     Tooltip,
 return
 
