@@ -2,7 +2,7 @@
 #NoEnv
 #Persistent
 ;#ErrorStdOut Error_logs.txt  ; Redirect errors to a log file named "error_log.txt"
-;bluestackmode:=0
+bluestackmode:=0
 mbtnstate:=0
 whelscrlfn:=0
 mdastate:= 0
@@ -22,7 +22,7 @@ right_middle_button:=10 ;right = 0 or 1 | middle = 0 or 1
 ;======================================================================================
 ;Menu, Tray icons, menu and texts
 Menu, Tray, Tip, Dumo - All Rounder
-Menu, Tray, Icon, fndisableone_all.ico
+;Menu, Tray, Icon, fndisableone_all.ico
 Menu, Tray, Add, Screenshot State, Screenshot1orScreenshot2State 
 Menu, Tray, Add, SpeedUpDown_UnRe State, SpeedUpDownorUndoRedo_State
 Menu, Tray, Add, CopyCut/CopylinkCopyCut State, CopyCutorCopylinkCopyCutState
@@ -54,7 +54,6 @@ Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add, Exit App, exiterapp
-;Menu, Tray, Show
 
 ;======================================================================================
 
@@ -87,8 +86,7 @@ WM_RBUTTONDOWN()
  Menu, MyMenu, Show
 }
 
-OnMessage(0x0203, "checkahkguisclipcloser")
-;OnMessage(0x0203, "WM_LBUTTONDBLCLK") ;double click to downsize. Double click again to resize.
+OnMessage(0x0203, "WM_LBUTTONDBLCLK") ;double click to downsize. Double click again to resize.
 WM_LBUTTONDBLCLK() { 
     
    global
@@ -96,19 +94,19 @@ WM_LBUTTONDBLCLK() {
    WinGet, TempID, , A
    WinGetPos, , , Temp_Width, Temp_Height, A 
    
-   If (Temp_Width = 75 && Temp_Height = 75) {
+   If (Temp_Width = 30 && Temp_Height = 30) {
       WinMove, A, , , , % %TempID%_Width, % %TempID%_Height
    } else {
    %TempID%_Width := Temp_Width
    %TempID%_Height := Temp_Height
-   WinMove, A, , , , 75, 75
+   WinMove, A, , , , 30, 30
    }      
 
 }
 
 ;====================================================================================================================
 ;====================================================================================================================
-;Hotkey to select area using middle mouse button for screen clipping and media play pause 
+;Hotkey to select area using left mouse button and mouse middle button 
 ;====================================================================================================================
 #IF (mbtnstate=0 AND right_middle_button=01)
 ; Variables
@@ -158,7 +156,7 @@ return
 middlebclickmntr:
     If (ClickCount = 1) 
 		{
-        	checkahkguisclipclosernmedia()
+        	SendInput {Media_Play_Pause}
     	} 
 	else if (ClickCount > 1) 
 		{
@@ -181,7 +179,7 @@ return
 
 ;====================================================================================================================
 ;====================================================================================================================
-;Hotkey to select area using right mouse button and mouse middle button 
+;Hotkey to select area using left mouse button and mouse middle button 
 ;====================================================================================================================
 
 #IF (mbtnstate=0 AND right_middle_button=10)
@@ -191,6 +189,7 @@ holdThreshold := 300
 
 ; Variables to manage the state
 isHolding := false
+
 
 ; Right mouse button down event
 RButton::
@@ -216,21 +215,20 @@ RButton up::
     }
     return
 
-; Middle mouse button event
-MButton::
-    ; Middle mouse button event
-    If (ClickCount > 0)
-        ClickCount += 1
-    else
-        ClickCount := 1
-    If (ClickCount < 3)
-        Tooltip, %ClickCount%
-    SetTimer, mbclickmonitor4left, 300
-    ; Send the middle mouse button click
-    Click, Middle
-    return
+Mbutton::
+If (ClickCount > 0)
+	{
+		ClickCount +=1
+	}
+else
+	{
+		ClickCount :=1
+	}
+If (ClickCount < 3)
+    Tooltip, %ClickCount%
+SetTimer, mbclickmonitor, 300
 
-; Monitor for middle mouse button click
+
 ~WheelUp::checkahkguisclip()
 
 #IF
@@ -348,21 +346,6 @@ mbclickmonitor:
     If (ClickCount = 1) 
 		{
         	SendInput {Media_Play_Pause}
-    	} 
-	else if (ClickCount > 1) 
-		{
-    	    MNFunctionmenu()
-        	Menu, MNFunctions, DeleteAll
-    	}
-    ClickCount := 0
-    SetTimer, mbclickmonitor, Off
-    Tooltip,
-return
-
-mbclickmonitor4left:
-    If (ClickCount = 1) 
-		{
-        	checkahkguisclipclosernmedia()
     	} 
 	else if (ClickCount > 1) 
 		{
@@ -754,59 +737,6 @@ checkahkguisclip()
             ; Check if the active window and the window under the cursor are the same
             if (activePID = windowPID) {
 				SCW_Win2Clipboardxi()
-				WinClose, ahk_pid %activePID%
-            }
-        }
-}
-Return
-
-checkahkguisclipclosernmedia()
-{
-    ; Get the handle of the window under the mouse cursor
-    MouseGetPos,,, hWnd
-    ; Get the class name of the window under the mouse cursor
-    WinGetClass, className, ahk_id %hWnd%
-    ; Get the process name of the window under the mouse cursor
-    WinGet, processName, ProcessName, ahk_id %hWnd%
-    ; Get the process ID of the window under the mouse cursor
-    WinGet, windowPID, PID, ahk_id %hWnd%
-    
-    ; Check if the class name, process name, and process ID match the target window
-    if (className = "AutoHotkeyGUI" and processName = "AutoHotkeyU32.exe")
-        {
-            ; Get the handle of the active window
-            WinGet, activePID, PID, A
-            ; Check if the active window and the window under the cursor are the same
-            if (activePID = windowPID) {
-				;WinClose, ahk_pid %activePID%
-				WM_LBUTTONDBLCLK()
-            }
-        }
-	else
-		{
-			SendInput {Media_Play_Pause}
-		}
-}
-Return
-
-checkahkguisclipcloser()
-{
-    ; Get the handle of the window under the mouse cursor
-    MouseGetPos,,, hWnd
-    ; Get the class name of the window under the mouse cursor
-    WinGetClass, className, ahk_id %hWnd%
-    ; Get the process name of the window under the mouse cursor
-    WinGet, processName, ProcessName, ahk_id %hWnd%
-    ; Get the process ID of the window under the mouse cursor
-    WinGet, windowPID, PID, ahk_id %hWnd%
-    
-    ; Check if the class name, process name, and process ID match the target window
-    if (className = "AutoHotkeyGUI" and processName = "AutoHotkeyU32.exe")
-        {
-            ; Get the handle of the active window
-            WinGet, activePID, PID, A
-            ; Check if the active window and the window under the cursor are the same
-            if (activePID = windowPID) {
 				WinClose, ahk_pid %activePID%
             }
         }

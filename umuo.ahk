@@ -2,7 +2,7 @@
 #NoEnv
 #Persistent
 ;#ErrorStdOut Error_logs.txt  ; Redirect errors to a log file named "error_log.txt"
-;bluestackmode:=0
+
 mbtnstate:=0
 whelscrlfn:=0
 mdastate:= 0
@@ -20,44 +20,9 @@ right_middle_button:=10 ;right = 0 or 1 | middle = 0 or 1
 ;to change it just change value of clip from 0 to 1 and also comment the line 679 ;this line is of function checkahkguisclip()
 ;to discard the image delete it by physical keyboard or right click menu
 ;======================================================================================
-;Menu, Tray icons, menu and texts
+;Menu, Tray icons and texts
 Menu, Tray, Tip, Dumo - All Rounder
-Menu, Tray, Icon, fndisableone_all.ico
-Menu, Tray, Add, Screenshot State, Screenshot1orScreenshot2State 
-Menu, Tray, Add, SpeedUpDown_UnRe State, SpeedUpDownorUndoRedo_State
-Menu, Tray, Add, CopyCut/CopylinkCopyCut State, CopyCutorCopylinkCopyCutState
-Menu, Tray, Add, Play Pause 4 All - PlayPause 4 Bluestack State, MediaPlay4AllorMediaPlay4NoxState
-;Menu, Tray, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
-Menu, Tray, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
-Menu, Tray, Add
-Menu, Tray, Add
-Menu, Tray, Add, Fn Key Enable/Disable, fnkeystateenabledisable
-Menu, Tray, Add, Scroll Up/Down - Arrow State, wheelupdownarrow
-Menu, Tray, Add, Mouse_Middle_Button Enable/Disable , mousembuttonenabledisable
-Menu, Tray, Add, Mouse_Xtra_Buttons - Arrow/Wheel_RL, xbuttonkeystateenb
-Menu, Tray, Add
-Menu, Tray, Add
-Menu, Tray, Add, Mouse_ScrnClip Lbutton/Mbutton, mscrncliplmbutton
-Menu, Tray, Add
-Menu, Tray, Add
-Menu, Tray, Add, Mouse_Sharex Mbutton/Back2ScrnClip, mbuttonsharexscr
-Menu, Tray, Add
-Menu, Tray, Add
-Menu, Tray, Add, Lecture Recordings, lectruerecordingopen
-Menu, Tray, Add, Explore E_D, exploreedopen
-Menu, Tray, Add
-Menu, Tray, Add
-Menu, Tray, Add, OneNote, OneNoterunner
-Menu, Tray, Add, Calculator, calculatorrunneropen
-Menu, Tray, Add, Notepad, notepadrunneropen
-Menu, Tray, Add
-Menu, Tray, Add
-Menu, Tray, Add
-Menu, Tray, Add, Exit App, exiterapp
-;Menu, Tray, Show
-
-;======================================================================================
-
+;Menu, Tray, Icon, fndisableone_all.ico
 SetBatchLines,-1
 SetWinDelay,-1
 ;~ #Include Gdip.ahk
@@ -87,8 +52,7 @@ WM_RBUTTONDOWN()
  Menu, MyMenu, Show
 }
 
-OnMessage(0x0203, "checkahkguisclipcloser")
-;OnMessage(0x0203, "WM_LBUTTONDBLCLK") ;double click to downsize. Double click again to resize.
+OnMessage(0x0203, "WM_LBUTTONDBLCLK") ;double click to downsize. Double click again to resize.
 WM_LBUTTONDBLCLK() { 
     
    global
@@ -96,19 +60,19 @@ WM_LBUTTONDBLCLK() {
    WinGet, TempID, , A
    WinGetPos, , , Temp_Width, Temp_Height, A 
    
-   If (Temp_Width = 75 && Temp_Height = 75) {
+   If (Temp_Width = 30 && Temp_Height = 30) {
       WinMove, A, , , , % %TempID%_Width, % %TempID%_Height
    } else {
    %TempID%_Width := Temp_Width
    %TempID%_Height := Temp_Height
-   WinMove, A, , , , 75, 75
+   WinMove, A, , , , 30, 30
    }      
 
 }
 
 ;====================================================================================================================
 ;====================================================================================================================
-;Hotkey to select area using middle mouse button for screen clipping and media play pause 
+;Hotkey to select area using left mouse button and mouse middle button 
 ;====================================================================================================================
 #IF (mbtnstate=0 AND right_middle_button=01)
 ; Variables
@@ -158,7 +122,7 @@ return
 middlebclickmntr:
     If (ClickCount = 1) 
 		{
-        	checkahkguisclipclosernmedia()
+        	SendInput {Media_Play_Pause}
     	} 
 	else if (ClickCount > 1) 
 		{
@@ -181,7 +145,7 @@ return
 
 ;====================================================================================================================
 ;====================================================================================================================
-;Hotkey to select area using right mouse button and mouse middle button 
+;Hotkey to select area using left mouse button and mouse middle button 
 ;====================================================================================================================
 
 #IF (mbtnstate=0 AND right_middle_button=10)
@@ -225,14 +189,13 @@ MButton::
         ClickCount := 1
     If (ClickCount < 3)
         Tooltip, %ClickCount%
-    SetTimer, mbclickmonitor4left, 300
+    SetTimer, mbclickmonitor, 300
     ; Send the middle mouse button click
     Click, Middle
     return
 
 ; Monitor for middle mouse button click
 ~WheelUp::checkahkguisclip()
-
 #IF
 ;00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
@@ -311,8 +274,7 @@ MNFunctionmenu()
     Menu, MNFunctions, Add, Screenshot State, Screenshot1orScreenshot2State 
     Menu, MNFunctions, Add, SpeedUpDown_UnRe State, SpeedUpDownorUndoRedo_State
     Menu, MNFunctions, Add, CopyCut/CopylinkCopyCut State, CopyCutorCopylinkCopyCutState
-    Menu, MNFunctions, Add, Play Pause 4 All - PlayPause 4 Bluestack State, MediaPlay4AllorMediaPlay4NoxState
-	;Menu, MNFunctions, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
+    Menu, MNFunctions, Add, Play Pause 4 All - PlayPause 4 Nox State, MediaPlay4AllorMediaPlay4NoxState
 	Menu, MNFunctions, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
     Menu, MNFunctions, Add
     Menu, MNFunctions, Add
@@ -348,21 +310,6 @@ mbclickmonitor:
     If (ClickCount = 1) 
 		{
         	SendInput {Media_Play_Pause}
-    	} 
-	else if (ClickCount > 1) 
-		{
-    	    MNFunctionmenu()
-        	Menu, MNFunctions, DeleteAll
-    	}
-    ClickCount := 0
-    SetTimer, mbclickmonitor, Off
-    Tooltip,
-return
-
-mbclickmonitor4left:
-    If (ClickCount = 1) 
-		{
-        	checkahkguisclipclosernmedia()
     	} 
 	else if (ClickCount > 1) 
 		{
@@ -447,7 +394,7 @@ MediaPlay4AllorMediaPlay4NoxState:
 	SoundBeep, 300, 700
 	if (mdastate = 1)
 		{
-			SplashTextOn,250,60,,Play/Pause for Bluestack
+			SplashTextOn,250,60,,Play/Pause for nox
 			Sleep 400
 			SplashTextOff
 			if (fnstate = 0)
@@ -473,26 +420,6 @@ MediaPlay4AllorMediaPlay4NoxState:
 					Menu, Tray, Icon, fnenableone_all.ico
 				}
 		}
-}
-Return
-
-Bluestackflscmxmmd:
-{
-	bluestackmode := !bluestackmode
-	if (bluestackmode=0)
-		{
-			MsgBox, 262144, Bluestacks Maximize,
-			(
-				Bluestacks Maximize
-			) 
-		}
-	else if (bluestackmode=1)
-		{
-			MsgBox, 262144, Bluestacks Fullscreen,
-			(
-				Bluestacks Fullscreen
-			) 
-		} 
 }
 Return
 
@@ -704,10 +631,6 @@ return
 SCW_Win2File(0)  ;save selected clipping on desktop as .png  ; this was submited by tervon; border not savd even if (1)
 return
 
-y::
-GK_Win2OCR()  
-return
-
 Left::
 WinGetPos, Pos_X, Pos_Y, , , A
 Pos_X -= 30
@@ -754,59 +677,6 @@ checkahkguisclip()
             ; Check if the active window and the window under the cursor are the same
             if (activePID = windowPID) {
 				SCW_Win2Clipboardxi()
-				WinClose, ahk_pid %activePID%
-            }
-        }
-}
-Return
-
-checkahkguisclipclosernmedia()
-{
-    ; Get the handle of the window under the mouse cursor
-    MouseGetPos,,, hWnd
-    ; Get the class name of the window under the mouse cursor
-    WinGetClass, className, ahk_id %hWnd%
-    ; Get the process name of the window under the mouse cursor
-    WinGet, processName, ProcessName, ahk_id %hWnd%
-    ; Get the process ID of the window under the mouse cursor
-    WinGet, windowPID, PID, ahk_id %hWnd%
-    
-    ; Check if the class name, process name, and process ID match the target window
-    if (className = "AutoHotkeyGUI" and processName = "AutoHotkeyU32.exe")
-        {
-            ; Get the handle of the active window
-            WinGet, activePID, PID, A
-            ; Check if the active window and the window under the cursor are the same
-            if (activePID = windowPID) {
-				;WinClose, ahk_pid %activePID%
-				WM_LBUTTONDBLCLK()
-            }
-        }
-	else
-		{
-			SendInput {Media_Play_Pause}
-		}
-}
-Return
-
-checkahkguisclipcloser()
-{
-    ; Get the handle of the window under the mouse cursor
-    MouseGetPos,,, hWnd
-    ; Get the class name of the window under the mouse cursor
-    WinGetClass, className, ahk_id %hWnd%
-    ; Get the process name of the window under the mouse cursor
-    WinGet, processName, ProcessName, ahk_id %hWnd%
-    ; Get the process ID of the window under the mouse cursor
-    WinGet, windowPID, PID, ahk_id %hWnd%
-    
-    ; Check if the class name, process name, and process ID match the target window
-    if (className = "AutoHotkeyGUI" and processName = "AutoHotkeyU32.exe")
-        {
-            ; Get the handle of the active window
-            WinGet, activePID, PID, A
-            ; Check if the active window and the window under the cursor are the same
-            if (activePID = windowPID) {
 				WinClose, ahk_pid %activePID%
             }
         }
@@ -1221,172 +1091,6 @@ Clipboard2Acrobat(SavePathPDF:="")		; Adobe Acrobat must be installed
 		PDSaveCollectGarbage	:= 0x0020   ;/* perform garbage collection on */
 		PVDoc.save(PDSaveFull|PDSaveLinearized, SavePathPDF FileName)
 	}
-}
-
-; PLUGIN FUNCTION -----------------------------------------------------
-GK_Win2OCR(lang:="en") {
-	;Send, !{PrintScreen} ; Active Win's client area to Clipboard
-	WinGet, hwnd, ID, ahk_class AutoHotkeyGUI
-	Loop 99 {
-		Gui %A_Index%: +LastFound
-		if WinExist() = hwnd {
-			currentgui := A_Index
-			break
-		}
-	}
-	winGetPos, X, Y, W, H, ahk_id %Hwnd%
-	x:=x+3, y:=y+3, w:=w-6, h:=h-6
-	pToken := Gdip_Startup()
-	pBitmap := Gdip_BitmapFromScreen(X "|" Y "|" W "|" H)	
-	hBitmap := Gdip_CreateHBITMAPFromBitmap(pBitmap) ; Convert an hBitmap from the pBitmap
-	pIRandomAccessStream := HBitmapToRandomAccessStream(hBitmap) ; OCR function needs a randome access stream (so it isn't "locked down")
-	DllCall("DeleteObject", "Ptr", hBitmap)	
-	Clipboard := ocr(pIRandomAccessStream, lang)
-	ObjRelease(pIRandomAccessStream)
-	tooltip, %  clipboard
-	Sleep, 4000
-	ToolTip
-	Gdip_DisposeImage(pBitmap)
-	Gdip_Shutdown(pToken) ; clear selection
-}
-
-
-; OTHER FUNCTIONS -----------------------------------------------------
-
-CreateClass(string, interface, ByRef Class){
-	CreateHString(string, hString)
-	VarSetCapacity(GUID, 16)
-	DllCall("ole32\CLSIDFromString", "wstr", interface, "ptr", &GUID)
-	result := DllCall("Combase.dll\RoGetActivationFactory", "ptr", hString, "ptr", &GUID, "ptr*", Class)
-	if (result != 0){
-		if (result = 0x80004002)
-			msgbox No such interface supported
-		else if (result = 0x80040154)
-			msgbox Class not registered
-		else
-			msgbox error: %result%
-			Reload
-	}
-	DeleteHString(hString)
-}
-
-CreateHString(string, ByRef hString){
-	 DllCall("Combase.dll\WindowsCreateString", "wstr", string, "uint", StrLen(string), "ptr*", hString)
-}
-
-DeleteHString(hString){
-	DllCall("Combase.dll\WindowsDeleteString", "ptr", hString)
-}
-
-WaitForAsync(Object, ByRef ObjectResult){
-	AsyncInfo := ComObjQuery(Object, IAsyncInfo := "{00000036-0000-0000-C000-000000000046}")
-	loop	{
-		DllCall(NumGet(NumGet(AsyncInfo+0)+7*A_PtrSize), "ptr", AsyncInfo, "uint*", status)   ; IAsyncInfo.Status
-		if (status != 0)		{
-			if (status != 1)			{
-				msgbox AsyncInfo status error.
-				ExitApp
-			}
-			ObjRelease(AsyncInfo)
-			AsyncInfo := ""
-			break
-		}
-		sleep 10
-	}
-	DllCall(NumGet(NumGet(Object+0)+8*A_PtrSize), "ptr", Object, "ptr*", ObjectResult)   ; GetResults
-}
-
-
-HBitmapToRandomAccessStream(hBitmap) {
-	static IID_IRandomAccessStream := "{905A0FE1-BC53-11DF-8C49-001E4FC686DA}", IID_IPicture:= "{7BF80980-BF32-101A-8BBB-00AA00300CAB}", PICTYPE_BITMAP := 1, BSOS_DEFAULT   := 0
-	DllCall("Ole32\CreateStreamOnHGlobal", "Ptr", 0, "UInt", true, "PtrP", pIStream, "UInt")
-
-	VarSetCapacity(PICTDESC, sz := 8 + A_PtrSize*2, 0)
-	NumPut(sz, PICTDESC)
-	NumPut(PICTYPE_BITMAP, PICTDESC, 4)
-	NumPut(hBitmap, PICTDESC, 8)
-	riid := CLSIDFromString(IID_IPicture, GUID1)
-	DllCall("OleAut32\OleCreatePictureIndirect", "Ptr", &PICTDESC, "Ptr", riid, "UInt", false, "PtrP", pIPicture, "UInt")
-	; IPicture::SaveAsFile
-	DllCall(NumGet(NumGet(pIPicture+0) + A_PtrSize*15), "Ptr", pIPicture, "Ptr", pIStream, "UInt", true, "UIntP", size, "UInt")
-	riid := CLSIDFromString(IID_IRandomAccessStream, GUID2)
-	DllCall("ShCore\CreateRandomAccessStreamOverStream", "Ptr", pIStream, "UInt", BSOS_DEFAULT, "Ptr", riid, "PtrP", pIRandomAccessStream, "UInt")
-	ObjRelease(pIPicture)
-	ObjRelease(pIStream)
-	Return pIRandomAccessStream
-}
-
-CLSIDFromString(IID, ByRef CLSID) {
-	VarSetCapacity(CLSID, 16, 0)
-	if res := DllCall("ole32\CLSIDFromString", "WStr", IID, "Ptr", &CLSID, "UInt")
-		throw Exception("CLSIDFromString failed. Error: " . Format("{:#x}", res))
-	Return &CLSID
-}
-
-;********************teadrinker OCR ***********************************
-OCR(IRandomAccessStream, language := "en"){
-	static OcrEngineClass, OcrEngineObject, MaxDimension, LanguageClass, LanguageObject, CurrentLanguage, StorageFileClass, BitmapDecoderClass
-	static rlangList := {"ar":"Arabic (Saudi Arabia)","bg":"Bulgarian (Bulgaria)","zh":"Chinese (Hong Kong S.A.R.)","zh":"Chinese (PRC)","zh":"Chinese (Taiwan)","hr":"Croatian (Croatia)","cs":"Czech (Czech Republic)","da":"Danish (Denmark)","nl":"Dutch (Netherlands)","En":"English (Great Britain)","en":"English (United States)","et":"Estonian (Estonia)","fi":"Finnish (Finland)","fr":"French (France)","de":"German (Germany)","el":"Greek (Greece)","he":"Hebrew (Israel)","hu":"Hungarian (Hungary)","it":"Italian (Italy)","ja":"Japanese (Japan)","ko":"Korean (Korea)","lv":"Latvian (Latvia)","lt":"Lithuanian (Lithuania)","nb":"Norwegian, BokmÃ¥l (Norway)","pl":"Polish (Poland)","pt":"Portuguese (Brazil)","pt":"Portuguese (Portugal)","ro":"Romanian (Romania)","ru":"Russian (Russia)","sr":"Serbian (Latin, Serbia)","sr":"Serbian (Latin, Serbia)","sk":"Slovak (Slovakia)","sl":"Slovenian (Slovenia)","es":"Spanish (Spain)","sv":"Swedish (Sweden)","th":"Thai (Thailand)","tr":"Turkish (Turkey)","uk":"Ukrainian (Ukraine)"}
-
-	if (OcrEngineClass = "")	{
-		CreateClass("Windows.Globalization.Language", ILanguageFactory := "{9B0252AC-0C27-44F8-B792-9793FB66C63E}", LanguageClass)
-		CreateClass("Windows.Graphics.Imaging.BitmapDecoder", IStorageFileStatics := "{438CCB26-BCEF-4E95-BAD6-23A822E58D01}", BitmapDecoderClass)
-		CreateClass("Windows.Media.Ocr.OcrEngine", IOcrEngineStatics := "{5BFFA85A-3384-3540-9940-699120D428A8}", OcrEngineClass)
-		DllCall(NumGet(NumGet(OcrEngineClass+0)+6*A_PtrSize), "ptr", OcrEngineClass, "uint*", MaxDimension)   ; MaxImageDimension
-	}
-	if (CurrentLanguage != language){
-		if (LanguageObject != ""){
-			ObjRelease(LanguageObject)
-			ObjRelease(OcrEngineObject)
-			LanguageObject := OcrEngineObject := ""
-		}
-		CreateHString(language, hString)
-		DllCall(NumGet(NumGet(LanguageClass+0)+6*A_PtrSize), "ptr", LanguageClass, "ptr", hString, "ptr*", LanguageObject)   ; CreateLanguage
-		DeleteHString(hString)
-		DllCall(NumGet(NumGet(OcrEngineClass+0)+9*A_PtrSize), "ptr", OcrEngineClass, ptr, LanguageObject, "ptr*", OcrEngineObject)   ; TryCreateFromLanguage
-		if (OcrEngineObject = 0){
-			Run % "ms-settings:regionlanguage"
-			MsgBox % 0x10, % "OCR Error"
-						 , % "Can not use language """ rlangList[language] """ for OCR, please install the corresponding language pack."
-			return "error"
-		}
-		CurrentLanguage := language
-	}
-	DllCall(NumGet(NumGet(BitmapDecoderClass+0)+14*A_PtrSize), "ptr", BitmapDecoderClass, "ptr", IRandomAccessStream, "ptr*", BitmapDecoderObject)   ; CreateAsync
-	WaitForAsync(BitmapDecoderObject, BitmapDecoderObject1)
-	BitmapFrame := ComObjQuery(BitmapDecoderObject1, IBitmapFrame := "{72A49A1C-8081-438D-91BC-94ECFC8185C6}")
-	DllCall(NumGet(NumGet(BitmapFrame+0)+12*A_PtrSize), "ptr", BitmapFrame, "uint*", width)   ; get_PixelWidth
-	DllCall(NumGet(NumGet(BitmapFrame+0)+13*A_PtrSize), "ptr", BitmapFrame, "uint*", height)   ; get_PixelHeight
-	if (width > MaxDimension) or (height > MaxDimension){
-		msgbox Image is to big - %width%x%height%.`nIt should be maximum - %MaxDimension% pixels
-		return
-	}
-	SoftwareBitmap := ComObjQuery(BitmapDecoderObject1, IBitmapFrameWithSoftwareBitmap := "{FE287C9A-420C-4963-87AD-691436E08383}")
-	DllCall(NumGet(NumGet(SoftwareBitmap+0)+6*A_PtrSize), "ptr", SoftwareBitmap, "ptr*", BitmapFrame1)   ; GetSoftwareBitmapAsync
-	WaitForAsync(BitmapFrame1, BitmapFrame2)
-	DllCall(NumGet(NumGet(OcrEngineObject+0)+6*A_PtrSize), "ptr", OcrEngineObject, ptr, BitmapFrame2, "ptr*", OcrResult)   ; RecognizeAsync
-	WaitForAsync(OcrResult, OcrResult1)
-	DllCall(NumGet(NumGet(OcrResult1+0)+6*A_PtrSize), "ptr", OcrResult1, "ptr*", lines)   ; get_Lines
-	DllCall(NumGet(NumGet(lines+0)+7*A_PtrSize), "ptr", lines, "int*", count)   ; count
-	loop % count {
-		DllCall(NumGet(NumGet(lines+0)+6*A_PtrSize), "ptr", lines, "int", A_Index-1, "ptr*", OcrLine)
-		DllCall(NumGet(NumGet(OcrLine+0)+7*A_PtrSize), "ptr", OcrLine, "ptr*", hText)
-		buffer := DllCall("Combase.dll\WindowsGetStringRawBuffer", "ptr", hText, "uint*", length, "ptr")
-		text .= StrGet(buffer, "UTF-16") "`n"
-		ObjRelease(OcrLine)
-		OcrLine := ""
-	}
-	ObjRelease(BitmapDecoderObject)
-	ObjRelease(BitmapDecoderObject1)
-	ObjRelease(SoftwareBitmap)
-	ObjRelease(BitmapFrame)
-	ObjRelease(BitmapFrame1)
-	ObjRelease(BitmapFrame2)
-	ObjRelease(OcrResult)
-	ObjRelease(OcrResult1)
-	ObjRelease(lines)
-	BitmapDecoderObject := BitmapDecoderObject1 := SoftwareBitmap := BitmapFrame := BitmapFrame1 := BitmapFrame2 := OcrResult := OcrResult1 := lines := ""
-	return text
 }
 
 
@@ -4057,7 +3761,7 @@ else if (KeyPressCount = 4)
 		SoundBeep, 300, 700
 		if (mdastate = 1)
 			{
-				SplashTextOn,250,60,,Play/Pause for Bluestack
+				SplashTextOn,250,60,,Play/Pause for nox
 				Sleep 400
 				SplashTextOff
 				if (fnstate = 0)
@@ -4390,37 +4094,24 @@ Numpad6::^+0
 NumpadRight::^+0
 #IF
 
-
 #IF (mdastate=1)
-;backward for BlueStacks
+;backward for nox
 NumpadLeft::
 Numpad4::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, a
-	}
-return	
+	ControlSend,, a, ahk_exe Nox.exe
+return
 
-;forward for BlueStacks
+;forward for nox
 NumpadRight::
 Numpad6::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, d
-	}
-return	
+	ControlSend,, d, ahk_exe Nox.exe
+return
 
-;BlueStacks media play pause
+;nox media play pause
 Numpad5::
 NumpadClear::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, s
-	}
-return	
+	ControlSend,, s, ahk_exe Nox.exe
+return
 #IF
 
 ;Undo and Redo
@@ -4799,32 +4490,20 @@ F2::^+0
 #IF
 
 #IF (fnstate=1 AND mdastate=1)
-;backward for Bluestack
+;backward for nox
 F1::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, a
-	}
-return	
+	ControlSend,, a, ahk_exe Nox.exe
+return
 
-;forward for Bluestack
+;forward for nox
 F2::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, d
-	}
-return	
+	ControlSend,, d, ahk_exe Nox.exe
+return
 
-;Bluestack media play pause
+;nox media play pause
 Escape::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, s
-	}
-return	
+	ControlSend,, s, ahk_exe Nox.exe
+return
 #IF
 
 
