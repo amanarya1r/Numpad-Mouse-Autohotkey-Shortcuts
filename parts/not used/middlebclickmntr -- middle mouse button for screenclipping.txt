@@ -1,1 +1,15 @@
+; Timer function to monitor multiple clicks
 middlebclickmntr:
+    If (ClickCount = 1) 
+		{
+        	checkahkguisclipclosernmedia()
+    	} 
+	else if (ClickCount > 1) 
+		{
+    	    MNFunctionmenu()
+        	Menu, MNFunctions, DeleteAll
+    	}
+    ClickCount := 0
+    SetTimer, middlebclickmntr, Off
+    Tooltip,
+return
