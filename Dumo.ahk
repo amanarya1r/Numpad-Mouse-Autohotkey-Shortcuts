@@ -272,8 +272,8 @@ return
 ;Mouse extra buttons 
 #IF (xbuttonstate = 1)
 {
-	XButton1::WheelLeft
-	XButton2::WheelRight
+	XButton1::WheelRight
+	XButton2::WheelLeft
 }
 #IF
 
