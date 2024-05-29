@@ -584,8 +584,8 @@ xbuttonkeystateenb:
         {
             MsgBox, 262144, XButton WheelL/WheelR,
             (
-                XButton1 - Wheel Left
-                `nXButton2 - Whell Right
+                XButton1 - Wheel Right
+                `nXButton2 - Whell Left
             )
         } 
 }
