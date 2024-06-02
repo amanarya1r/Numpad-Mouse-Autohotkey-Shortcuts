@@ -21,6 +21,7 @@ right_middle_button:=10 ;right = 0 or 1 | middle = 0 or 1
 ;to discard the image delete it by physical keyboard or right click menu
 ;======================================================================================
 ;Menu, Tray icons, menu and texts
+Menu, Tray, NoStandard ;Pause reload and supsend will be removed 
 Menu, Tray, Tip, Dumo - All Rounder
 Menu, Tray, Icon, fndisableone_all.ico
 Menu, Tray, Add, Screenshot State, Screenshot1orScreenshot2State 
@@ -108,7 +109,7 @@ WM_LBUTTONDBLCLK() {
 
 ;====================================================================================================================
 ;====================================================================================================================
-;Hotkey to select area using middle mouse button for screen clipping and media play pause 
+;Hotkey to select area using middle mouse button for screen clipping and media play pause and on double click on it
 ;====================================================================================================================
 #IF (mbtnstate=0 AND right_middle_button=01)
 ; Variables
@@ -165,7 +166,8 @@ return
 
 ;====================================================================================================================
 ;====================================================================================================================
-;Hotkey to select area using right mouse button and mouse middle button 
+;Hotkey to select area using right mouse button and mouse middle button for play and pause when single pressed
+;menu when doubled pressed
 ;====================================================================================================================
 
 #IF (mbtnstate=0 AND right_middle_button=10)
@@ -187,7 +189,8 @@ CheckHold:
     if (GetKeyState("RButton", "P")) {
         isHolding := true
         SCW_ScreenClip2Win(clip:=0) ; set to 1 to auto-copy to clipboard
-        WinActivate, ScreenClippingWindow ahk_class AutoHotkeyGUI ;set clip:=0 bcz if you put 1 it will copy with borders 
+        WinActivate, ScreenClippingWindow ahk_class AutoHotkeyGUI 
+		SetTimer, CheckHold, off ;to avoid multiple instances
     }
     return
 
@@ -222,46 +225,112 @@ MButton::
 
 ;====================================================================================================================
 ;====================================================================================================================
-;Hotkey for middle mouse button to activate sharex and double click on it to give menu  
+;Hotkey for middle mouse button to activate sharex and double click on it to give menu and single click to play pause
+;media
 ;====================================================================================================================
-#IF (mbtnstate=0 AND right_middle_button=00)
+#IF (mbtnstate=0 AND right_middle_button=11)
+; Variables
+LongPressThresholdxi := 300  ; Adjust the threshold for long press (300 milliseconds)
+MiddleMouseDownru := false
+MiddleMouseDownTimeku := 0
 ClickCount := 0
-MiddleButtonLongPress := False
 
-; Detect long press of middle mouse button
-~MButton::
-    MiddleButtonLongPress := False
-    SetTimer, MiddleButtonCheck, 300  ; Adjust the time (in milliseconds) for long press detection
-return
-
-~MButton Up::
-    SetTimer, MiddleButtonCheck, Off
-    if (MiddleButtonLongPress) {
-        ; Long press action
-        SendInput ^+/
-    } else {
-        ; Short press action
-        if (ClickCount > 0) {
-            ClickCount += 1
-        } else {
-            ClickCount := 1
-        }
-        
-        if (ClickCount < 3) {
-            Tooltip, %ClickCount%
-        }
-        
-        SetTimer, mbclickmonitor, 300
+; Middle mouse button down
+MButton::
+    if (!MiddleMouseDownru) {
+        MiddleMouseDownru := true
+        MiddleMouseDownTimeku := A_TickCount
+        SetTimer, CheckMiddleMouseLongPressdu, 10
     }
 return
 
-MiddleButtonCheck:
-    MiddleButtonLongPress := True
+; Middle mouse button up
+MButton Up::
+    SetTimer, CheckMiddleMouseLongPressdu, Off
+    if (MiddleMouseDownru) {
+        MiddleMouseDownru := false
+        ; If the button was released before the long press threshold, treat it as a short press
+        if ((A_TickCount - MiddleMouseDownTimeku) < LongPressThresholdxi) {
+            ClickCount := (ClickCount ? ClickCount + 1 : 1)
+            if (ClickCount < 3)
+				{
+					Tooltip, %ClickCount%
+				}
+            SetTimer, mbclickmonitor, 300
+        }
+    }
 return
 
+; Timer function to check for a long press
+CheckMiddleMouseLongPressdu:
+    if (MiddleMouseDownru && (A_TickCount - MiddleMouseDownTimeku >= LongPressThresholdxi)) {
+        ; Long press detected
+        SendInput ^+/ ;shortcut for sharex to activate screenshot
+        MiddleMouseDownru := false  ; Reset the state to avoid multiple triggers
+        SetTimer, CheckMiddleMouseLongPressdu, Off
+    }
+return
+
+; Ensure the script doesn't terminate prematurely
+#InstallKeybdHook
+#InstallMouseHook
 #IF
 ;00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
+;====================================================================================================================
+;====================================================================================================================
+;Hotkey for right mouse button to activate sharex on long press and double click mouse middle button to give menu 
+;single click on louse middle button to play pause media 
+;====================================================================================================================
+#IF (mbtnstate=0 AND right_middle_button=00)
+
+; Time threshold to distinguish between a hold and a click (in milliseconds)
+holdThresholdli := 300
+
+; Variables to manage the state
+isHoldingki := false
+
+; Right mouse button down event
+RButton::
+    isHoldingki := false
+    SetTimer, CheckHoldpi, % -holdThresholdli
+    return
+
+; Timer to check if the button is held
+CheckHoldpi:
+    if (GetKeyState("RButton", "P")) {
+        isHoldingki := true
+        SendInput ^+/ ;sharex screenshot 
+		SetTimer, CheckHoldpi, off ;this will avoid creating two instaces of sharex screenshot
+    }
+    return
+
+; Right mouse button up event
+RButton up::
+    SetTimer, CheckHoldpi, Off
+    if (!isHoldingki) {
+        ; Send the normal right-click
+        Click, Right
+    }
+    return
+
+; Middle mouse button event
+MButton::
+    ; Middle mouse button event
+    If (ClickCount > 0)
+        ClickCount += 1
+    else
+        ClickCount := 1
+    If (ClickCount < 3)
+        Tooltip, %ClickCount%
+    SetTimer, mbclickmonitor, 300
+    ; Send the middle mouse button click
+    Click, Middle
+    return
+
+;00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+;Mouse wheel function wheelup=right_arrow  wheeldown=left
 #IF (whelscrlfn=1)
 {
     WheelUp::Right
@@ -269,7 +338,7 @@ return
 }
 #IF
 
-;Mouse extra buttons 
+;Mouse extra buttons function depending on xbuttonstate
 #IF (xbuttonstate = 1)
 {
 	XButton1::WheelRight
