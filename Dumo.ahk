@@ -32,8 +32,8 @@ Menu, Tray, Add, Play Pause 4 All - PlayPause 4 Bluestack State, MediaPlay4Allor
 Menu, Tray, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
 Menu, Tray, Add
 Menu, Tray, Add
-Menu, Tray, Add, Fn Key Enable/Disable, fnkeystateenabledisable
-Menu, Tray, Add, Scroll Up/Down - Arrow State, wheelupdownarrow
+Menu, Tray, Add, Fn Key Enable, fnkeystateenabledisable
+Menu, Tray, Add, ScrollWheel - LeftArrow / RightArrow, wheelupdownarrow
 Menu, Tray, Add, Mouse_Middle_Button Enable/Disable , mousembuttonenabledisable
 Menu, Tray, Add, Mouse_Xtra_Buttons - Arrow/Wheel_RL, xbuttonkeystateenb
 Menu, Tray, Add
@@ -53,11 +53,68 @@ Menu, Tray, Add, Calculator, calculatorrunneropen
 Menu, Tray, Add, Notepad, notepadrunneropen
 Menu, Tray, Add
 Menu, Tray, Add
+Menu, Tray, Add, Edit App Script, editscript
+Menu, Tray, Add
+Menu, Tray, Add
+Menu, Tray, Add, Reload App, appreloader
+Menu, Tray, Add, Pause App, apppause
+Menu, Tray, Add, Suspend App, appsuspender
+Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add, Exit App, exiterapp
-;Menu, Tray, Show
 
-;======================================================================================
+;=============================================================================================
+/*
+;submenu for the menu
+Menu, sharexshotstate, Add, 
+Menu, speedunrestate, Add,
+Menu, copycutstate, Add,
+Menu, playpausestate, Add,
+Menu, mkeyonestate, Add,
+Menu, fnkeyedstate, Add,
+Menu, scrolledstate, Add,
+Menu, mousembtnstate, Add,
+Menu, mouseebtnstate, Add,
+Menu, lbtnmbtnclipstate, Add,
+Menu, mousesmbtnstate, Add,
+*/
+
+Menu, MNFunctions, Add, Screenshot State, Screenshot1orScreenshot2State 
+Menu, MNFunctions, Add, SpeedUpDown_UnRe State, SpeedUpDownorUndoRedo_State
+Menu, MNFunctions, Add, CopyCut/CopylinkCopyCut State, CopyCutorCopylinkCopyCutState
+Menu, MNFunctions, Add, Play Pause 4 All - PlayPause 4 Bluestack State, MediaPlay4AllorMediaPlay4NoxState
+;Menu, MNFunctions, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
+Menu, MNFunctions, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add, Fn Key Enable, fnkeystateenabledisable
+Menu, MNFunctions, Add, ScrollWheel - LeftArrow / RightArrow, wheelupdownarrow
+Menu, MNFunctions, Add, Mouse_Middle_Button Enable/Disable , mousembuttonenabledisable
+Menu, MNFunctions, Add, Mouse_Xtra_Buttons - Arrow/Wheel_RL, xbuttonkeystateenb
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add, Mouse_ScrnClip Lbutton/Mbutton, mscrncliplmbutton
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add, Mouse_Sharex Mbutton/Back2ScrnClip, mbuttonsharexscr
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add, Lecture Recordings, lectruerecordingopen
+Menu, MNFunctions, Add, Explore E_D, exploreedopen
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add, OneNote, OneNoterunner
+Menu, MNFunctions, Add, Calculator, calculatorrunneropen
+Menu, MNFunctions, Add, Notepad, notepadrunneropen
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add, Reload App, appreloader
+Menu, MNFunctions, Add, Pause App, apppause
+Menu, MNFunctions, Add, Suspend App, appsuspender
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add, Exit App, exiterapp
+;=============================================================================================
 
 SetBatchLines,-1
 SetWinDelay,-1
@@ -354,48 +411,7 @@ MButton::
 #IF
 ;============================================================================================================
 ;============================================================================================================
-;Menu function and call
-;InstantMenu is a function which can be called from any where or any if else statments
 ;current states of key always on top of script
-;make a menu
-;name of the menu is MNFunctions
-MNFunctionmenu()
-{
-    Menu, MNFunctions, Add, Screenshot State, Screenshot1orScreenshot2State 
-    Menu, MNFunctions, Add, SpeedUpDown_UnRe State, SpeedUpDownorUndoRedo_State
-    Menu, MNFunctions, Add, CopyCut/CopylinkCopyCut State, CopyCutorCopylinkCopyCutState
-    Menu, MNFunctions, Add, Play Pause 4 All - PlayPause 4 Bluestack State, MediaPlay4AllorMediaPlay4NoxState
-	;Menu, MNFunctions, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
-	Menu, MNFunctions, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
-    Menu, MNFunctions, Add
-    Menu, MNFunctions, Add
-    Menu, MNFunctions, Add, Fn Key Enable/Disable, fnkeystateenabledisable
-    Menu, MNFunctions, Add, Scroll Up/Down - Arrow State, wheelupdownarrow
-    Menu, MNFunctions, Add, Mouse_Middle_Button Enable/Disable , mousembuttonenabledisable
-	Menu, MNFunctions, Add, Mouse_Xtra_Buttons - Arrow/Wheel_RL, xbuttonkeystateenb
-	Menu, MNFunctions, Add
-    Menu, MNFunctions, Add
-	Menu, MNFunctions, Add, Mouse_ScrnClip Lbutton/Mbutton, mscrncliplmbutton
-	Menu, MNFunctions, Add
-	Menu, MNFunctions, Add
-	Menu, MNFunctions, Add, Mouse_Sharex Mbutton/Back2ScrnClip, mbuttonsharexscr
-    Menu, MNFunctions, Add
-    Menu, MNFunctions, Add
-    Menu, MNFunctions, Add, Lecture Recordings, lectruerecordingopen
-    Menu, MNFunctions, Add, Explore E_D, exploreedopen
-    Menu, MNFunctions, Add
-    Menu, MNFunctions, Add
-    Menu, MNFunctions, Add, OneNote, OneNoterunner
-    Menu, MNFunctions, Add, Calculator, calculatorrunneropen
-    Menu, MNFunctions, Add, Notepad, notepadrunneropen
-    Menu, MNFunctions, Add
-    Menu, MNFunctions, Add
-    Menu, MNFunctions, Add
-    Menu, MNFunctions, Add, Exit App, exiterapp
-    Menu, MNFunctions, Show
-}
-
-
 ; Timer function to monitor multiple clicks ||||| Most important gosub never delete
 mbclickmonitor:
     If (ClickCount = 1) 
@@ -404,8 +420,10 @@ mbclickmonitor:
     	} 
 	else if (ClickCount > 1) 
 		{
-    	    MNFunctionmenu()
-        	Menu, MNFunctions, DeleteAll
+    	    Menu, MNFunctions, Show
+			;MNFunctionmenu()
+        	;Menu, MNFunctions, DeleteAll
+			SetTimer, mbclickmonitor, Off
     	}
     ClickCount := 0
     SetTimer, mbclickmonitor, Off
@@ -419,8 +437,9 @@ mbclickmonitor4left:
     	} 
 	else if (ClickCount > 1) 
 		{
-    	    MNFunctionmenu()
-        	Menu, MNFunctions, DeleteAll
+    	    Menu, MNFunctions, Show
+        	;Menu, MNFunctions, DeleteAll
+			SetTimer, mbclickmonitor, Off
     	}
     ClickCount := 0
     SetTimer, mbclickmonitor4left, Off
@@ -440,6 +459,8 @@ Screenshot1orScreenshot2State: ;create non-spaced labels for menu items
 		}
 	else if (scrstate=1)
 		{
+			Menu, Tray, Rename, Screenshot State, Screenshot State Off
+			Menu, MNFunctions, Rename, Screenshot State, Screenshot State Off
 			MsgBox, 262144, Screenshot Key Press,
 			(
 				Screenshot  - 1 press
@@ -575,6 +596,8 @@ fnkeystateenabledisable:
 	SoundBeep, 900, 500
 	if (fnstate = 1)
 		{
+			Menu, Tray, Rename, Fn Key Enable, Fn Key Disable 
+			Menu, MNFunctions, Rename, Fn Key Enable, Fn Key Disable 
 			if (mdastate = 0)
 				{
 					Menu, Tray, Icon, fnenableone_all.ico
@@ -586,6 +609,8 @@ fnkeystateenabledisable:
 		}
 	else if (fnstate = 0)
 		{
+			Menu, Tray, Rename, Fn Key Disable, Fn Key Enable 
+			Menu, MNFunctions, Rename, Fn Key Disable, Fn Key Enable
 			if (mdastate = 0)
 				{
 					Menu, Tray, Icon, fndisableone_all.ico
@@ -603,7 +628,9 @@ wheelupdownarrow:
     whelscrlfn:=!whelscrlfn
     if (whelscrlfn=0)
         {
-            MsgBox, 262144, Scroll Up/Down,
+            Menu, Tray, Rename, ScrollWheel - ScrollUp / ScrollDown, ScrollWheel - LeftArrow / RightArrow
+			Menu, MNFunctions, Rename, ScrollWheel - ScrollUp / ScrollDown, ScrollWheel - LeftArrow / RightArrow
+			MsgBox, 262144, Scroll Up/Down,
             (
                 Scroll Up   - Scroll Up
                 `nScroll Down - Scroll Down
@@ -611,7 +638,9 @@ wheelupdownarrow:
         }
     else if (whelscrlfn=1)
         {
-            MsgBox, 262144, Scroll Up/Down,
+			Menu, Tray, Rename, ScrollWheel - LeftArrow / RightArrow, ScrollWheel - ScrollUp / ScrollDown
+			Menu, MNFunctions, Rename, ScrollWheel - LeftArrow / RightArrow, ScrollWheel - ScrollUp / ScrollDown
+			MsgBox, 262144, Scroll Up/Down,
             (
                 Scroll Up   - Arrow Right
                 `nScroll Down - Arrow Left
@@ -730,6 +759,30 @@ notepadrunneropen:
 run, Notepad
 Return
 
+editscript:
+{
+    SplashTextOn,150,40,,Edit Script
+    Sleep 400
+    SplashTextOff
+    editwithvscode()
+}
+Return
+
+appreloader:
+{
+    SplashTextOn,150,40,,Reload App
+    Sleep 400
+    SplashTextOff
+    Reload
+}
+Return
+
+apppause:
+return
+
+appsuspender:
+return
+
 exiterapp:
 {
     SplashTextOn,150,40,,Exit Script
@@ -738,6 +791,15 @@ exiterapp:
     ExitApp
 }
 Return
+
+editwithvscode()
+{
+ ; Run the specified executable with the script full path as an argument
+ ; Construct the full path to the executable and the script
+ vscodePath := "C:\Users\" . A_UserName . "\AppData\Local\Programs\Microsoft VS Code\Code.exe"
+ ; Run the executable with the script's full path as an argument
+ Run, %vscodePath% "%A_ScriptFullPath%"
+}
 
 ;============================================================================================================
 ;============================================================================================================
@@ -4588,8 +4650,10 @@ else if (KeyPressCount = 3)
 	}
 else if (KeyPressCount > 3)
 	{
-		MNFunctionmenu()
-        Menu, MNFunctions, DeleteAll
+		Menu, MNFunctions, Show
+		;MNFunctionmenu()
+        ;Menu, MNFunctions, DeleteAll
+		SetTimer, fKeyPressMonitor, Off
 	}
 KeyPressCount := 0
 SetTimer, fKeyPressMonitor, Off
@@ -4822,8 +4886,10 @@ else if (KeyPressCount = 3)
 	}
 else if (KeyPressCount > 3)
 	{
-		MNFunctionmenu()
-        Menu, MNFunctions, DeleteAll
+		Menu, MNFunctions, Show
+		;MNFunctionmenu()
+        ;Menu, MNFunctions, DeleteAll
+		SetTimer, spclonunfykm, Off
 	}
 KeyPressCount := 0
 SetTimer, spclonunfykm, Off
