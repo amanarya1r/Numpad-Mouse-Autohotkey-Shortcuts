@@ -14,7 +14,9 @@ mdkystate:=0
 mbtnstate:=0
 whelscrlfn:=0
 xbuttonstate:=0
-right_middle_button:=10 ;right = 0 or 1 | middle = 0 or 1
+clipperchoose:=0
+screenclipstate:=10
+sharexclipstate:=00
 ;======================================================================================
 ;the above script is tweaked and you can only copy to clipboard on scroll up and autocopy to clipbaord function is disabled
 ;to change it just change value of clip from 0 to 1 and also comment the line 679 ;this line is of function checkahkguisclip()
@@ -34,14 +36,18 @@ Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add, Fn Key Enable, fnkeystateenabledisable
 Menu, Tray, Add, ScrollWheel - LeftArrow / RightArrow, wheelupdownarrow
-Menu, Tray, Add, Mouse_Middle_Button Enable/Disable , mousembuttonenabledisable
-Menu, Tray, Add, Mouse_Xtra_Buttons - Arrow/Wheel_RL, xbuttonkeystateenb
+Menu, Tray, Add, Mouse_Middle_Button - Disable, mousembuttonenabledisable
+Menu, Tray, Add, Mouse_Xtra_Buttons - LeftArrow / RightArrow, xbuttonkeystateenb
 Menu, Tray, Add
 Menu, Tray, Add
-Menu, Tray, Add, Mouse_ScrnClip Lbutton/Mbutton, mscrncliplmbutton
+Menu, Tray, Add, MouseButton - SharexClipping, scrnshrxclip
 Menu, Tray, Add
 Menu, Tray, Add
-Menu, Tray, Add, Mouse_Sharex Mbutton/Back2ScrnClip, mbuttonsharexscr
+Menu, Tray, Add, Mouse_ScrnClip - MButton, mscrncliplmbutton
+Menu, Tray, Check, Mouse_ScrnClip - MButton
+Menu, Tray, Add
+Menu, Tray, Add
+Menu, Tray, Add, Mouse_Sharex - MButton, mbuttonsharexscr 
 Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add, Lecture Recordings, lectruerecordingopen
@@ -57,7 +63,8 @@ Menu, Tray, Add, Edit App Script, editscript
 Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add, Reload App, appreloader
-Menu, Tray, Add, Pause App, apppause
+Menu, Tray, Add
+Menu, Tray, Add
 Menu, Tray, Add, Suspend App, appsuspender
 Menu, Tray, Add
 Menu, Tray, Add
@@ -89,14 +96,18 @@ Menu, MNFunctions, Add
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Fn Key Enable, fnkeystateenabledisable
 Menu, MNFunctions, Add, ScrollWheel - LeftArrow / RightArrow, wheelupdownarrow
-Menu, MNFunctions, Add, Mouse_Middle_Button Enable/Disable , mousembuttonenabledisable
-Menu, MNFunctions, Add, Mouse_Xtra_Buttons - Arrow/Wheel_RL, xbuttonkeystateenb
+Menu, MNFunctions, Add, Mouse_Middle_Button - Disable, mousembuttonenabledisable
+Menu, MNFunctions, Add, Mouse_Xtra_Buttons - LeftArrow / RightArrow, xbuttonkeystateenb
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
-Menu, MNFunctions, Add, Mouse_ScrnClip Lbutton/Mbutton, mscrncliplmbutton
+Menu, MNFunctions, Add, MouseButton - SharexClipping, scrnshrxclip
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
-Menu, MNFunctions, Add, Mouse_Sharex Mbutton/Back2ScrnClip, mbuttonsharexscr
+Menu, MNFunctions, Add, Mouse_ScrnClip - MButton, mscrncliplmbutton
+Menu, MNFunctions, Check, Mouse_ScrnClip - MButton
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add, Mouse_Sharex - MButton, mbuttonsharexscr
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Lecture Recordings, lectruerecordingopen
@@ -109,7 +120,8 @@ Menu, MNFunctions, Add, Notepad, notepadrunneropen
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Reload App, appreloader
-Menu, MNFunctions, Add, Pause App, apppause
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Suspend App, appsuspender
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
@@ -168,7 +180,7 @@ WM_LBUTTONDBLCLK() {
 ;====================================================================================================================
 ;Hotkey to select area using middle mouse button for screen clipping and media play pause and on double click on it
 ;====================================================================================================================
-#IF (mbtnstate=0 AND right_middle_button=01)
+#IF (mbtnstate=0 AND screenclipstate=01 AND clipperchoose=0)
 ; Variables
 LongPressThreshold := 300  ; Adjust the threshold for long press (300 milliseconds)
 MiddleMouseDown := false
@@ -227,7 +239,7 @@ return
 ;menu when doubled pressed
 ;====================================================================================================================
 
-#IF (mbtnstate=0 AND right_middle_button=10)
+#IF (mbtnstate=0 AND screenclipstate=10 AND clipperchoose=0)
 
 ; Time threshold to distinguish between a hold and a click (in milliseconds)
 holdThreshold := 300
@@ -285,52 +297,49 @@ MButton::
 ;Hotkey for middle mouse button to activate sharex and double click on it to give menu and single click to play pause
 ;media
 ;====================================================================================================================
-#IF (mbtnstate=0 AND right_middle_button=11)
-; Variables
-LongPressThresholdxi := 300  ; Adjust the threshold for long press (300 milliseconds)
-MiddleMouseDownru := false
-MiddleMouseDownTimeku := 0
-ClickCount := 0
+#IF (mbtnstate=0 AND sharexclipstate=11 AND clipperchoose=1)
+;; Define a variable to track the time when the middle mouse button is pressed
+global MiddleMouseDownTime := 0
 
-; Middle mouse button down
+; Define the hotkey for detecting the middle mouse button press
 MButton::
-    if (!MiddleMouseDownru) {
-        MiddleMouseDownru := true
-        MiddleMouseDownTimeku := A_TickCount
-        SetTimer, CheckMiddleMouseLongPressdu, 10
-    }
-return
+    ; Record the time when the middle mouse button is pressed
+    MiddleMouseDownTime := A_TickCount
+    ; Set a timer to check for a long press
+    SetTimer, CheckLongPress, 300
+    return
 
-; Middle mouse button up
-MButton Up::
-    SetTimer, CheckMiddleMouseLongPressdu, Off
-    if (MiddleMouseDownru) {
-        MiddleMouseDownru := false
-        ; If the button was released before the long press threshold, treat it as a short press
-        if ((A_TickCount - MiddleMouseDownTimeku) < LongPressThresholdxi) {
-            ClickCount := (ClickCount ? ClickCount + 1 : 1)
-            if (ClickCount < 3)
-				{
-					Tooltip, %ClickCount%
-				}
-            SetTimer, mbclickmonitor, 300
-        }
+; Define the subroutine to check for a long press
+CheckLongPress:
+    ; If the middle mouse button is still held down after 300ms
+    if (GetKeyState("MButton", "P")) {
+        ; Send the desired input for long press
+        SendInput, ^+/
     }
-return
+    ; Reset the variable tracking the press time
+    MiddleMouseDownTime := 0
+    ; Turn off the timer
+    SetTimer, CheckLongPress, Off
+    return
 
-; Timer function to check for a long press
-CheckMiddleMouseLongPressdu:
-    if (MiddleMouseDownru && (A_TickCount - MiddleMouseDownTimeku >= LongPressThresholdxi)) {
-        ; Long press detected
-        SendInput ^+/ ;shortcut for sharex to activate screenshot
-        MiddleMouseDownru := false  ; Reset the state to avoid multiple triggers
-        SetTimer, CheckMiddleMouseLongPressdu, Off
+; Define the hotkey for releasing the middle mouse button
+MButton up::
+    ; Calculate the duration the middle mouse button was held down
+    Duration := A_TickCount - MiddleMouseDownTime
+    ; If the duration is less than 300ms, it's a quick click
+    if (Duration < 300) {
+        ; SetTimer example, replace it with your own action
+		    ; Middle mouse button event
+			If (ClickCount > 0)
+				ClickCount += 1
+			else
+				ClickCount := 1
+			If (ClickCount < 3)
+				Tooltip, %ClickCount%
+        SetTimer, mbclickmonitor, 300
     }
-return
+    return
 
-; Ensure the script doesn't terminate prematurely
-#InstallKeybdHook
-#InstallMouseHook
 #IF
 ;00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
@@ -339,7 +348,7 @@ return
 ;Hotkey for right mouse button to activate sharex on long press and double click mouse middle button to give menu 
 ;single click on louse middle button to play pause media 
 ;====================================================================================================================
-#IF (mbtnstate=0 AND right_middle_button=00)
+#IF (mbtnstate=0 AND sharexclipstate=00 AND clipperchoose=1)
 
 ; Time threshold to distinguish between a hold and a click (in milliseconds)
 holdThresholdli := 300
@@ -630,21 +639,11 @@ wheelupdownarrow:
         {
             Menu, Tray, Rename, ScrollWheel - ScrollUp / ScrollDown, ScrollWheel - LeftArrow / RightArrow
 			Menu, MNFunctions, Rename, ScrollWheel - ScrollUp / ScrollDown, ScrollWheel - LeftArrow / RightArrow
-			MsgBox, 262144, Scroll Up/Down,
-            (
-                Scroll Up   - Scroll Up
-                `nScroll Down - Scroll Down
-            )
         }
     else if (whelscrlfn=1)
         {
 			Menu, Tray, Rename, ScrollWheel - LeftArrow / RightArrow, ScrollWheel - ScrollUp / ScrollDown
 			Menu, MNFunctions, Rename, ScrollWheel - LeftArrow / RightArrow, ScrollWheel - ScrollUp / ScrollDown
-			MsgBox, 262144, Scroll Up/Down,
-            (
-                Scroll Up   - Arrow Right
-                `nScroll Down - Arrow Left
-            )
         } 
 }
 Return
@@ -654,13 +653,17 @@ mousembuttonenabledisable:
     mbtnstate:=!mbtnstate
     if (mbtnstate=0)
         {
-            SplashTextOn,250,50,,Scroll Button Disable
+            Menu, Tray, Rename, Mouse_Middle_Button - Enable, Mouse_Middle_Button - Disable
+			Menu, MNFunctions, Rename, Mouse_Middle_Button - Enable, Mouse_Middle_Button - Disable
+			SplashTextOn,250,50,,Scroll Button Disable
             Sleep 400
             SplashTextOff
         }
     else if (mbtnstate=1)
         {
-            SplashTextOn,250,50,,Scroll Button Enable
+            Menu, Tray, Rename, Mouse_Middle_Button - Disable, Mouse_Middle_Button - Enable
+			Menu, MNFunctions, Rename, Mouse_Middle_Button - Disable, Mouse_Middle_Button - Enable
+			SplashTextOn,250,50,,Scroll Button Enable
             Sleep 400
             SplashTextOff
         } 
@@ -672,7 +675,9 @@ xbuttonkeystateenb:
     xbuttonstate:=!xbuttonstate
     if (xbuttonstate = 0)
         {
-            MsgBox, 262144, XButton Left/Rigt,
+            Menu, MNFunctions, Rename, Mouse_Xtra_Buttons - WheelLeft / WheelRight, Mouse_Xtra_Buttons - LeftArrow / RightArrow
+			Menu, Tray, Rename, Mouse_Xtra_Buttons - WheelLeft / WheelRight, Mouse_Xtra_Buttons - LeftArrow / RightArrow
+			MsgBox, 262144, XButton Left/Rigt,
             (
 				XButton1 - Left
                 `nXButton2 - Right
@@ -680,7 +685,9 @@ xbuttonkeystateenb:
         }
     else if (xbuttonstate = 1)
         {
-            MsgBox, 262144, XButton WheelL/WheelR,
+            Menu, MNFunctions, Rename, Mouse_Xtra_Buttons - LeftArrow / RightArrow, Mouse_Xtra_Buttons - WheelLeft / WheelRight
+			Menu, Tray, Rename, Mouse_Xtra_Buttons - LeftArrow / RightArrow, Mouse_Xtra_Buttons - WheelLeft / WheelRight
+			MsgBox, 262144, XButton WheelL/WheelR,
             (
                 XButton1 - Wheel Right
                 `nXButton2 - Whell Left
@@ -689,11 +696,86 @@ xbuttonkeystateenb:
 }
 Return
 
+scrnshrxclip:
+{
+	If (clipperchoose=0) ;ahk based clipper changed to sharex based
+		{
+			Menu, Tray, Rename, MouseButton - SharexClipping, MouseButton - ScreenClipping 
+			Menu, MNFunctions, Rename, MouseButton - SharexClipping, MouseButton - ScreenClipping 
+			If (screenclipstate = 10 AND sharexclipstate = 00) ;ahk based clipper which activates on rbutton
+				{
+					Menu, Tray, Uncheck, Mouse_ScrnClip - MButton ;unchecks the scrnclip for mbutton
+					Menu, MNFunctions, Uncheck, Mouse_ScrnClip - MButton
+                    Menu, Tray, Check, Mouse_Sharex - MButton
+					Menu, MNFunctions, Check, Mouse_Sharex - MButton
+				}
+            Else If (screenclipstate = 10 AND sharexclipstate = 11)
+                {
+                    Menu, Tray, Uncheck, Mouse_ScrnClip - MButton ;unchecks the scrnclip for mbutton
+					Menu, MNFunctions, Uncheck, Mouse_ScrnClip - MButton
+                    Menu, Tray, Check, Mouse_Sharex - LButton
+					Menu, MNFunctions, Check, Mouse_Sharex - LButton
+                }
+			Else If (screenclipstate = 01 AND sharexclipstate = 00) ;ahk based clipper which activates on mbutton
+				{
+					Menu, Tray, Uncheck, Mouse_ScrnClip - LButton
+					Menu, MNFunctions, Uncheck, Mouse_ScrnClip - LButton
+                    Menu, Tray, Check, Mouse_Sharex - MButton
+					Menu, MNFunctions, Check, Mouse_Sharex - MButton
+				} 
+            Else If (screenclipstate = 01 AND sharexclipstate = 11)
+                {
+                    Menu, Tray, Uncheck, Mouse_ScrnClip - LButton
+					Menu, MNFunctions, Uncheck, Mouse_ScrnClip - LButton
+                    Menu, Tray, Check, Mouse_Sharex - LButton
+					Menu, MNFunctions, Check, Mouse_Sharex - LButton
+                }
+			clipperchoose := 1		
+		}
+	Else If (clipperchoose=1) ;sharex based clipper changed to ahk based 
+		{
+			Menu, Tray, Rename, MouseButton - ScreenClipping, MouseButton - SharexClipping 
+			Menu, MNFunctions, Rename, MouseButton - ScreenClipping, MouseButton - SharexClipping 
+			If (screenclipstate = 10 AND sharexclipstate = 00)
+				{
+					Menu, Tray, Uncheck, Mouse_Sharex - MButton
+					Menu, MNFunctions, Uncheck, Mouse_Sharex - MButton
+                    Menu, Tray, Check, Mouse_ScrnClip - MButton
+					Menu, MNFunctions, Check, Mouse_ScrnClip - MButton
+				}
+            Else If (screenclipstate = 01 AND sharexclipstate = 00)
+                {
+                    Menu, Tray, Uncheck, Mouse_Sharex - MButton
+					Menu, MNFunctions, Uncheck, Mouse_Sharex - MButton
+                    Menu, Tray, Check, Mouse_ScrnClip - LButton
+					Menu, MNFunctions, Check, Mouse_ScrnClip - LButton
+                }
+			Else If (screenclipstate = 10 AND sharexclipstate = 11)
+				{
+					Menu, Tray, Uncheck, Mouse_Sharex - LButton
+					Menu, MNFunctions, Uncheck, Mouse_Sharex - LButton
+                    Menu, Tray, Check, Mouse_ScrnClip - MButton
+					Menu, MNFunctions, Check, Mouse_ScrnClip - MButton
+				}
+            Else If (screenclipstate = 01 AND sharexclipstate = 11)
+                {
+                    Menu, Tray, Uncheck, Mouse_Sharex - LButton
+					Menu, MNFunctions, Uncheck, Mouse_Sharex - LButton
+                    Menu, Tray, Check, Mouse_ScrnClip - LButton
+					Menu, MNFunctions, Check, Mouse_ScrnClip - LButton	
+                }
+			clipperchoose := 0
+		}  
+}
+Return
+
 mscrncliplmbutton:
 {
-    if (right_middle_button = 10)
+    if (screenclipstate = 10 AND clipperchoose = 0) 
         {
-            right_middle_button = 01
+            screenclipstate := 01
+			Menu, Tray, Rename, Mouse_ScrnClip - MButton, Mouse_ScrnClip - LButton
+			Menu, MNFunctions, Rename, Mouse_ScrnClip - MButton, Mouse_ScrnClip - LButton
 			MsgBox, 262144, Screen Clipping,
             (
                 MButton Long Press - Clipping
@@ -701,9 +783,11 @@ mscrncliplmbutton:
 				`nMbutton Click - 1.Pause 2.Menu 
             )
         } 
-	else if (right_middle_button = 01)
+	else if (screenclipstate = 01 AND clipperchoose = 0)
         {
-            right_middle_button = 10
+            screenclipstate := 10
+			Menu, Tray, Rename, Mouse_ScrnClip - LButton, Mouse_ScrnClip - MButton
+			Menu, MNFunctions, Rename, Mouse_ScrnClip - LButton, Mouse_ScrnClip - MButton
 			MsgBox, 262144, Screen Clipping,
             (
 				LButton Long Press - Clipping
@@ -716,19 +800,23 @@ Return
 
 mbuttonsharexscr:
 {
-    if (right_middle_button = 00)
+    if (sharexclipstate = 11 AND clipperchoose = 1)
         {
-            right_middle_button = 10
+            sharexclipstate := 00
+			Menu, Tray, Rename, Mouse_Sharex - LButton, Mouse_Sharex - MButton
+			Menu, MNFunctions, Rename, Mouse_Sharex - LButton, Mouse_Sharex - MButton
 			MsgBox, 262144, Screen Clipping,
             (
-                LButton Long Press - Clipping
+                LButton Long Press - Sharex Clipping
                 `nLButton Click - Legacy Function
 				`nMbutton Click - 1.Pause 2.Menu  
             )
         } 
-	else 
+	else if (sharexclipstate = 00 AND clipperchoose = 1)
         {
-            right_middle_button = 00
+            sharexclipstate := 11
+			Menu, Tray, Rename, Mouse_Sharex - MButton, Mouse_Sharex - LButton
+			Menu, MNFunctions, Rename, Mouse_Sharex - MButton, Mouse_Sharex - LButton
 			MsgBox, 262144, Sharex Mbutton Clipping,
             (
 				MButton Long Press - Sharex Clipping
@@ -777,11 +865,9 @@ appreloader:
 }
 Return
 
-apppause:
-return
-
 appsuspender:
-return
+
+Return
 
 exiterapp:
 {
@@ -4592,13 +4678,7 @@ If (KeyPressCount = 1)
 		ToolTip, Aimp Play/Pause
 		Sleep 400
 	}
-else if (KeyPressCount = 2)
-	{
-		SendInput, ^!0
-		ToolTip, Aimp Player
-		Sleep 400
-	}
-else if (KeyPressCount > 2)
+else if (KeyPressCount > 1)
 	{
 		SendInput, ^!0
 		ToolTip, Aimp Player
@@ -4800,7 +4880,6 @@ if (KeyPressCount <4)
 	{
 		Tooltip, %KeyPressCount%
 	}
-
 SetTimer, xKeyPressMonitor, 500
 return
 
@@ -4859,7 +4938,6 @@ if (KeyPressCount <5)
 	{
 		Tooltip, %KeyPressCount% `n1. Recent Tasks `n2. F12 `n3. Escape `n4. Menu
 	}
-
 SetTimer, spclonunfykm, 500
 return
 spclonunfykm:
