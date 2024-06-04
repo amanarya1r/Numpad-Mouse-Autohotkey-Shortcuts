@@ -22,14 +22,19 @@ sharexclipstate:=00
 ;to change it just change value of clip from 0 to 1 and also comment the line 679 ;this line is of function checkahkguisclip()
 ;to discard the image delete it by physical keyboard or right click menu
 ;======================================================================================
-;submenu for the menu
-Menu, sharexshotstate, Add, 
+;submenu for the menu and tray menu
+Menu, sharexshotstate, Add, ScrnShot - 1 || ReptShot - 2, Screenshot1orScreenshot2State
+Menu, sharexshotstate, Add, ScrnShot - 2 || ReptShot - 1, Screenshot1orScreenshot2State
+Menu, sharexshotstate, check, ScrnShot - 2 || ReptShot - 1
 Menu, speedunrestate, Add,
 Menu, copycutstate, Add,
 Menu, playpausestate, Add, Play Pause 4 All, MediaPlay4AllorMediaPlay4NoxState0
 Menu, playpausestate, Add, Play Pause 4 BlueStacks, MediaPlay4AllorMediaPlay4NoxState1
 Menu, playpausestate, check, Play Pause 4 All
 Menu, mkeyonestate, Add,
+Menu, fnkeystate, Add, Enable, fnkeysenable
+Menu, fnkeystate, Add, Disable, fnkeysdisable
+Menu, fnkeystate, check, Disable
 Menu, scrolledstate, Add,
 Menu, mousembtnstate, Add,
 Menu, mouseebtnstate, Add,
@@ -40,7 +45,7 @@ Menu, mousesmbtnstate, Add,
 Menu, Tray, NoStandard ;Pause reload and supsend will be removed 
 Menu, Tray, Tip, Dumo - All Rounder
 Menu, Tray, Icon, fndisableone_all.ico
-Menu, Tray, Add, Screenshot State, Screenshot1orScreenshot2State 
+Menu, Tray, Add, Screenshot State, :sharexshotstate
 Menu, Tray, Add, SpeedUpDown_UnRe State, SpeedUpDownorUndoRedo_State
 Menu, Tray, Add, CopyCut/CopylinkCopyCut State, CopyCutorCopylinkCopyCutState
 Menu, Tray, Add, Play Pause State, :playpausestate
@@ -48,7 +53,7 @@ Menu, Tray, Add, Play Pause State, :playpausestate
 Menu, Tray, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
 Menu, Tray, Add
 Menu, Tray, Add
-Menu, Tray, Add, Fn Key Enable, fnkeystateenabledisable
+Menu, Tray, Add, Fn Keys State, :fnkeystate
 Menu, Tray, Add, ScrollWheel - LeftArrow / RightArrow, wheelupdownarrow
 Menu, Tray, Add, Mouse_Middle_Button - Disable, mousembuttonenabledisable
 Menu, Tray, Add, Mouse_Xtra_Buttons - LeftArrow / RightArrow, xbuttonkeystateenb
@@ -86,7 +91,7 @@ Menu, Tray, Add, Exit App, exiterapp
 
 ;=============================================================================================
 ;context menu shower 
-Menu, MNFunctions, Add, Screenshot State, Screenshot1orScreenshot2State 
+Menu, MNFunctions, Add, Screenshot State, :sharexshotstate
 Menu, MNFunctions, Add, SpeedUpDown_UnRe State, SpeedUpDownorUndoRedo_State
 Menu, MNFunctions, Add, CopyCut/CopylinkCopyCut State, CopyCutorCopylinkCopyCutState
 Menu, MNFunctions, Add, Play Pause State, :playpausestate
@@ -94,7 +99,7 @@ Menu, MNFunctions, Add, Play Pause State, :playpausestate
 Menu, MNFunctions, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
-Menu, MNFunctions, Add, Fn Key Enable, fnkeystateenabledisable
+Menu, MNFunctions, Add, Fn Keys State, :fnkeystate
 Menu, MNFunctions, Add, ScrollWheel - LeftArrow / RightArrow, wheelupdownarrow
 Menu, MNFunctions, Add, Mouse_Middle_Button - Disable, mousembuttonenabledisable
 Menu, MNFunctions, Add, Mouse_Xtra_Buttons - LeftArrow / RightArrow, xbuttonkeystateenb
@@ -460,21 +465,13 @@ Screenshot1orScreenshot2State: ;create non-spaced labels for menu items
 	scrstate := !scrstate
 	if (scrstate=0)
 		{
-			MsgBox, 262144, Screenshot Key Press,
-			(
-				Screenshot  - 2 press
-				`nRepeat last - 1 press
-			) 
+			Menu, sharexshotstate, uncheck, ScrnShot - 1 || ReptShot - 2
+			Menu, sharexshotstate, check, ScrnShot - 2 || ReptShot - 1
 		}
 	else if (scrstate=1)
 		{
-			Menu, Tray, Rename, Screenshot State, Screenshot State Off
-			Menu, MNFunctions, Rename, Screenshot State, Screenshot State Off
-			MsgBox, 262144, Screenshot Key Press,
-			(
-				Screenshot  - 1 press
-				`nRepeat last - 2 press
-			)
+			Menu, sharexshotstate, check, ScrnShot - 1 || ReptShot - 2
+			Menu, sharexshotstate, uncheck, ScrnShot - 2 || ReptShot - 1
 		} 	
 }
 Return
@@ -604,36 +601,24 @@ MediaKey4OneNoteorMediaKey4AllState:
 }
 Return
 
-fnkeystateenabledisable:
+fnkeysdisable: ;means fnkeys are disable 
 {
-	fnstate:=!fnstate
+	fnstate:=0
 	SoundBeep, 900, 500
-	if (fnstate = 1)
-		{
-			Menu, Tray, Rename, Fn Key Enable, Fn Key Disable 
-			Menu, MNFunctions, Rename, Fn Key Enable, Fn Key Disable 
-			if (mdastate = 0)
-				{
-					Menu, Tray, Icon, fnenableone_all.ico
-				}
-			else if (mdastate = 1)
-				{
-					Menu, Tray, Icon, fnenableone_nox.ico
-				}
-		}
-	else if (fnstate = 0)
-		{
-			Menu, Tray, Rename, Fn Key Disable, Fn Key Enable 
-			Menu, MNFunctions, Rename, Fn Key Disable, Fn Key Enable
-			if (mdastate = 0)
-				{
-					Menu, Tray, Icon, fndisableone_all.ico
-				}
-			else if (mdastate = 1)
-				{
-					Menu, Tray, Icon, fndisableone_nox.ico
-				}
-	}
+	Menu, fnkeystate, check, Disable
+	Menu, fnkeystate, uncheck, Enable
+	gosub, iconchanger
+}
+Return
+	
+fnkeysenable: ;mean fnkeys are enable
+{
+	fnstate:=1
+	SoundBeep, 900, 500
+	Menu, fnkeystate, uncheck, Disable
+	Menu, fnkeystate, check, Enable
+	gosub, iconchanger
+
 }
 Return
 
@@ -871,7 +856,15 @@ appreloader:
 Return
 
 appsuspender:
-
+Suspend, Toggle
+If (A_IsSuspended)
+{
+	Menu, Tray, Icon, %A_ScriptDir%\bin\icons\suspended.ico,,1
+}
+Else
+{
+	gosub, iconchanger
+}
 Return
 
 exiterapp:
@@ -880,6 +873,27 @@ exiterapp:
     Sleep 400
     SplashTextOff
     ExitApp
+}
+Return
+
+iconchanger:
+{
+	if(mdastate = 0 AND fnstate = 0) ;media player 4 all, fn key disable
+        {
+			Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fndisableone_all.ico
+        }
+    else if(mdastate = 0 AND fnstate = 1) ;media player 4 all, fn key enable
+        {
+			Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fnenableone_all.ico
+        }
+    else if(mdastate = 1 AND fnstate = 0) ;media player 4 bluestack, fn key disable
+        {
+            Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fndisableone_nox.ico
+        }
+    else if(mdastate = 1 AND fnstate = 1) ;media player 4 bluestack, fn key enable
+        {
+            Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fnenableone_nox.ico
+        }
 }
 Return
 
@@ -4198,7 +4212,7 @@ return
 cKeyPressMonitor:
 If (KeyPressCount = 1)
 	{
-		scrstate := !scrstate
+		gosub, Screenshot1orScreenshot2State
 		if (scrstate=0)
 			{
 				MsgBox, 262144, Screenshot Key Press,
@@ -4748,7 +4762,16 @@ return
 ;Scrip Play/Pause
 NumpadDel::
 NumpadDot::
-suspend
+Suspend, Toggle
+If (A_IsSuspended)
+{
+	Menu, Tray, Icon, %A_ScriptDir%\bin\icons\suspended.ico,,1
+}
+Else
+{
+	gosub, iconchanger
+}
+Return
 SoundBeep, 500, 500
 return
 ;more new files 2
@@ -4760,28 +4783,13 @@ return
 ;Fn Script Play/Pause
 F12::
 fnstate:=!fnstate
-SoundBeep, 900, 500
 if (fnstate = 1)
 	{
-		if (mdastate = 0)
-			{
-				Menu, Tray, Icon, fnenableone_all.ico
-			}
-		else if (mdastate = 1)
-			{
-				Menu, Tray, Icon, fnenableone_nox.ico
-			}
+		gosub, fnkeysenable
 	}
 else if (fnstate = 0)
 	{
-		if (mdastate = 0)
-			{
-				Menu, Tray, Icon, fndisableone_all.ico
-			}
-		else if (mdastate = 1)
-			{
-				Menu, Tray, Icon, fndisableone_nox.ico
-			}
+		gosub, fnkeysdisable
 	}
 return
 
