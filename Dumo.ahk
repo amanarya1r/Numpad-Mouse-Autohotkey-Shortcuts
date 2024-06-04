@@ -23,11 +23,15 @@ sharexclipstate:=00
 ;to discard the image delete it by physical keyboard or right click menu
 ;======================================================================================
 ;submenu for the menu and tray menu
-Menu, sharexshotstate, Add, ScrnShot - 1 || ReptShot - 2, Screenshot1orScreenshot2State
-Menu, sharexshotstate, Add, ScrnShot - 2 || ReptShot - 1, Screenshot1orScreenshot2State
+Menu, sharexshotstate, Add, ScrnShot - 1 || ReptShot - 2, Screenshot1orScreenshot2State1
+Menu, sharexshotstate, Add, ScrnShot - 2 || ReptShot - 1, Screenshot1orScreenshot2State0
 Menu, sharexshotstate, check, ScrnShot - 2 || ReptShot - 1
-Menu, speedunrestate, Add,
-Menu, copycutstate, Add,
+Menu, speedunrestate, Add, SpeedUp || SpeedDown, SpeedUpDownor_State
+Menu, speedunrestate, Add, Redo || Undo, UndoRedo_State
+Menu, speedunrestate, check, SpeedUp || SpeedDown
+Menu, copycutstate, Add, Copy || Cut, copycutchoose
+Menu, copycutstate, Add, CopyLinkOneNote || Copy || Cut, copylinkcopycutchoose
+Menu, copycutstate, check, Copy || Cut
 Menu, playpausestate, Add, Play Pause 4 All, MediaPlay4AllorMediaPlay4NoxState0
 Menu, playpausestate, Add, Play Pause 4 BlueStacks, MediaPlay4AllorMediaPlay4NoxState1
 Menu, playpausestate, check, Play Pause 4 All
@@ -46,8 +50,8 @@ Menu, Tray, NoStandard ;Pause reload and supsend will be removed
 Menu, Tray, Tip, Dumo - All Rounder
 Menu, Tray, Icon, fndisableone_all.ico
 Menu, Tray, Add, Screenshot State, :sharexshotstate
-Menu, Tray, Add, SpeedUpDown_UnRe State, SpeedUpDownorUndoRedo_State
-Menu, Tray, Add, CopyCut/CopylinkCopyCut State, CopyCutorCopylinkCopyCutState
+Menu, Tray, Add, SpeedUpDown_UnRe State, :speedunrestate
+Menu, Tray, Add, CopyCut/CopylinkCopyCut State, :copycutstate
 Menu, Tray, Add, Play Pause State, :playpausestate
 ;Menu, Tray, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
 Menu, Tray, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
@@ -92,8 +96,8 @@ Menu, Tray, Add, Exit App, exiterapp
 ;=============================================================================================
 ;context menu shower 
 Menu, MNFunctions, Add, Screenshot State, :sharexshotstate
-Menu, MNFunctions, Add, SpeedUpDown_UnRe State, SpeedUpDownorUndoRedo_State
-Menu, MNFunctions, Add, CopyCut/CopylinkCopyCut State, CopyCutorCopylinkCopyCutState
+Menu, MNFunctions, Add, SpeedUpDown_UnRe State, :speedunrestate
+Menu, MNFunctions, Add, CopyCut/CopylinkCopyCut State, :copycutstate
 Menu, MNFunctions, Add, Play Pause State, :playpausestate
 ;Menu, MNFunctions, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
 Menu, MNFunctions, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
@@ -460,64 +464,73 @@ mbclickmonitor4left:
     Tooltip,
 return
 
-Screenshot1orScreenshot2State: ;create non-spaced labels for menu items
+Screenshot1orScreenshot2State0: ;create non-spaced labels for menu items
 {
-	scrstate := !scrstate
-	if (scrstate=0)
-		{
-			Menu, sharexshotstate, uncheck, ScrnShot - 1 || ReptShot - 2
-			Menu, sharexshotstate, check, ScrnShot - 2 || ReptShot - 1
-		}
-	else if (scrstate=1)
-		{
-			Menu, sharexshotstate, check, ScrnShot - 1 || ReptShot - 2
-			Menu, sharexshotstate, uncheck, ScrnShot - 2 || ReptShot - 1
-		} 	
+	scrstate:=0
+	Menu, sharexshotstate, uncheck, ScrnShot - 1 || ReptShot - 2
+	Menu, sharexshotstate, check, ScrnShot - 2 || ReptShot - 1
+
 }
 Return
 
-SpeedUpDownorUndoRedo_State:
+Screenshot1orScreenshot2State1:
 {
-	spustate := !spustate
-	if (spustate=0)
-		{
-			MsgBox, 262144, Speed up/down,
-			(
-				^ - speed up
-				`nv - speed down
-			) 
-		}
-	else if (spustate=1)
-		{
-			MsgBox, 262144, undo/redo,
-			(
-				^ - redo
-				`nv - undo
-			) 
-		} 
+	scrstate:=1
+	Menu, sharexshotstate, check, ScrnShot - 1 || ReptShot - 2
+	Menu, sharexshotstate, uncheck, ScrnShot - 2 || ReptShot - 1
 }
 Return
 
-CopyCutorCopylinkCopyCutState:
+SpeedUpDownor_State:
 {
-	cpcstate := !cpcstate
-	if (cpcstate=0)
-		{
-			MsgBox, 262144, copy/cut,
-			(
-				copy - 1 press
-				`ncut  - 1 press
-			) 
-		}
-	else if (cpcstate=1)
-		{
-			MsgBox, 262144, copylink/copy/cut,
-			(
-				copylink(onenote) - 1 press
-							 `ncopy - 2 press
-							  `ncut - 3 press
-			) 
-		} 
+	spustate := 0
+	Menu, speedunrestate, check, SpeedUp || SpeedDown
+	Menu, speedunrestate, uncheck, Redo || Undo
+	MsgBox, 262144, Speed up/down,
+	(
+		^ - speed up
+		`nv - speed down
+	) 
+}
+Return
+	
+UndoRedo_State:
+{
+	spustate := 1
+	Menu, speedunrestate, uncheck, SpeedUp || SpeedDown
+	Menu, speedunrestate, check, Redo || Undo
+	MsgBox, 262144, undo/redo,
+	(
+		^ - redo
+		`nv - undo
+	) 
+}
+Return
+
+copycutchoose:
+{
+	cpcstate:=0
+	Menu, copycutstate, check, Copy || Cut
+	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
+	MsgBox, 262144, copy/cut,
+	(
+		copy - 1 press
+		`ncut  - 1 press
+	) 
+}
+Return
+
+copylinkcopycutchoose:
+{
+	cpcstate:=1
+	Menu, copycutstate, uncheck, Copy || Cut
+	Menu, copycutstate, check, CopyLinkOneNote || Copy || Cut
+	MsgBox, 262144, copylink/copy/cut,
+	(
+		copylink(onenote) - 1 press
+					`ncopy - 2 press
+				 	 `ncut - 3 press
+	)  
 }
 Return
 
@@ -4212,9 +4225,10 @@ return
 cKeyPressMonitor:
 If (KeyPressCount = 1)
 	{
-		gosub, Screenshot1orScreenshot2State
+		scrstate:=!scrstate
 		if (scrstate=0)
 			{
+				gosub, Screenshot1orScreenshot2State0
 				MsgBox, 262144, Screenshot Key Press,
 				(
 					Screenshot  - 2 press
@@ -4223,6 +4237,7 @@ If (KeyPressCount = 1)
 			}
 		else if (scrstate=1)
 			{
+				gosub, Screenshot1orScreenshot2State1
 				MsgBox, 262144, Screenshot Key Press,
 				(
 					Screenshot  - 1 press
