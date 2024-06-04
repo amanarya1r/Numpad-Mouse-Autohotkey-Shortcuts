@@ -22,6 +22,20 @@ sharexclipstate:=00
 ;to change it just change value of clip from 0 to 1 and also comment the line 679 ;this line is of function checkahkguisclip()
 ;to discard the image delete it by physical keyboard or right click menu
 ;======================================================================================
+;submenu for the menu
+Menu, sharexshotstate, Add, 
+Menu, speedunrestate, Add,
+Menu, copycutstate, Add,
+Menu, playpausestate, Add, Play Pause 4 All, MediaPlay4AllorMediaPlay4NoxState0
+Menu, playpausestate, Add, Play Pause 4 BlueStacks, MediaPlay4AllorMediaPlay4NoxState1
+Menu, playpausestate, check, Play Pause 4 All
+Menu, mkeyonestate, Add,
+Menu, scrolledstate, Add,
+Menu, mousembtnstate, Add,
+Menu, mouseebtnstate, Add,
+Menu, lbtnmbtnclipstate, Add,
+Menu, mousesmbtnstate, Add,
+;======================================================================================
 ;Menu, Tray icons, menu and texts
 Menu, Tray, NoStandard ;Pause reload and supsend will be removed 
 Menu, Tray, Tip, Dumo - All Rounder
@@ -29,7 +43,7 @@ Menu, Tray, Icon, fndisableone_all.ico
 Menu, Tray, Add, Screenshot State, Screenshot1orScreenshot2State 
 Menu, Tray, Add, SpeedUpDown_UnRe State, SpeedUpDownorUndoRedo_State
 Menu, Tray, Add, CopyCut/CopylinkCopyCut State, CopyCutorCopylinkCopyCutState
-Menu, Tray, Add, Play Pause 4 All - PlayPause 4 Bluestack State, MediaPlay4AllorMediaPlay4NoxState
+Menu, Tray, Add, Play Pause State, :playpausestate
 ;Menu, Tray, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
 Menu, Tray, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
 Menu, Tray, Add
@@ -71,25 +85,11 @@ Menu, Tray, Add
 Menu, Tray, Add, Exit App, exiterapp
 
 ;=============================================================================================
-/*
-;submenu for the menu
-Menu, sharexshotstate, Add, 
-Menu, speedunrestate, Add,
-Menu, copycutstate, Add,
-Menu, playpausestate, Add,
-Menu, mkeyonestate, Add,
-Menu, fnkeyedstate, Add,
-Menu, scrolledstate, Add,
-Menu, mousembtnstate, Add,
-Menu, mouseebtnstate, Add,
-Menu, lbtnmbtnclipstate, Add,
-Menu, mousesmbtnstate, Add,
-*/
-
+;context menu shower 
 Menu, MNFunctions, Add, Screenshot State, Screenshot1orScreenshot2State 
 Menu, MNFunctions, Add, SpeedUpDown_UnRe State, SpeedUpDownorUndoRedo_State
 Menu, MNFunctions, Add, CopyCut/CopylinkCopyCut State, CopyCutorCopylinkCopyCutState
-Menu, MNFunctions, Add, Play Pause 4 All - PlayPause 4 Bluestack State, MediaPlay4AllorMediaPlay4NoxState
+Menu, MNFunctions, Add, Play Pause State, :playpausestate
 ;Menu, MNFunctions, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
 Menu, MNFunctions, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
 Menu, MNFunctions, Add
@@ -524,29 +524,14 @@ CopyCutorCopylinkCopyCutState:
 }
 Return
 
-MediaPlay4AllorMediaPlay4NoxState:
+MediaPlay4AllorMediaPlay4NoxState0:
 {
-	mdastate:=!mdastate
+	mdastate:=0
 	SoundBeep, 300, 700
-	if (mdastate = 1)
+	if (mdastate = 0)
 		{
-			SplashTextOn,250,60,,Play/Pause for Bluestack
-			Sleep 400
-			SplashTextOff
-			if (fnstate = 0)
-				{
-					Menu, Tray, Icon, fndisableone_nox.ico
-				}
-			else if (fnstate = 1)
-				{
-					Menu, Tray, Icon, fnenableone_nox.ico
-				}
-		}
-	else if (mdastate = 0)
-		{
-			SplashTextOn,250,60,,Play/Pause for all 
-			Sleep 400
-			SplashTextOff
+			Menu, playpausestate, check, Play Pause 4 All
+			Menu, playpausestate, uncheck, Play Pause 4 BlueStacks
 			if (fnstate = 0)
 				{
 					Menu, Tray, Icon, fndisableone_all.ico
@@ -554,6 +539,26 @@ MediaPlay4AllorMediaPlay4NoxState:
 			else if (fnstate = 1)
 				{
 					Menu, Tray, Icon, fnenableone_all.ico
+				}
+		}
+}
+Return
+
+MediaPlay4AllorMediaPlay4NoxState1:
+{
+	mdastate:=1
+	SoundBeep, 300, 700
+	if (mdastate = 1)
+		{
+			Menu, playpausestate, uncheck, Play Pause 4 All
+			Menu, playpausestate, check, Play Pause 4 BlueStacks
+			if (fnstate = 0)
+				{
+					Menu, Tray, Icon, fndisableone_nox.ico
+				}
+			else if (fnstate = 1)
+				{
+					Menu, Tray, Icon, fnenableone_nox.ico
 				}
 		}
 }
