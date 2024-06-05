@@ -35,7 +35,9 @@ Menu, copycutstate, check, Copy || Cut
 Menu, playpausestate, Add, Play Pause 4 All, MediaPlay4AllorMediaPlay4NoxState0
 Menu, playpausestate, Add, Play Pause 4 BlueStacks, MediaPlay4AllorMediaPlay4NoxState1
 Menu, playpausestate, check, Play Pause 4 All
-Menu, mkeyonestate, Add,
+Menu, mkeyonestate, Add, Media_Key 4 All, mediakey4allchoose
+Menu, mkeyonestate, Add, Media_Key 4 OneNote, mediakey4onenotechoose
+Menu, mkeyonestate, check, Media_Key 4 All,
 Menu, fnkeystate, Add, Enable, fnkeysenable
 Menu, fnkeystate, Add, Disable, fnkeysdisable
 Menu, fnkeystate, check, Disable
@@ -54,7 +56,7 @@ Menu, Tray, Add, SpeedUpDown_UnRe State, :speedunrestate
 Menu, Tray, Add, CopyCut/CopylinkCopyCut State, :copycutstate
 Menu, Tray, Add, Play Pause State, :playpausestate
 ;Menu, Tray, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
-Menu, Tray, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
+Menu, Tray, Add, Media Key State, :mkeyonestate
 Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add, Fn Keys State, :fnkeystate
@@ -100,7 +102,7 @@ Menu, MNFunctions, Add, SpeedUpDown_UnRe State, :speedunrestate
 Menu, MNFunctions, Add, CopyCut/CopylinkCopyCut State, :copycutstate
 Menu, MNFunctions, Add, Play Pause State, :playpausestate
 ;Menu, MNFunctions, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
-Menu, MNFunctions, Add, Media Key 4 OneNote State, MediaKey4OneNoteorMediaKey4AllState
+Menu, MNFunctions, Add, Media Key State, :mkeyonestate
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Fn Keys State, :fnkeystate
@@ -573,23 +575,28 @@ Bluestackflscmxmmd:
 }
 Return
 
-MediaKey4OneNoteorMediaKey4AllState:
+mediakey4allchoose:
 {
-	mdkystate := !mdkystate
-	if (mdkystate=0)
-		{
-			MsgBox, 262144, Media_Play_Pause,
-			(
-				Play/Pause - Play/Pause
-			) 
-		}
-	else if (mdkystate=1)
-		{
-			MsgBox, 262144, Media_Play_Pause,
-			(
-				Play/Pause - ctrl + shift + 6
-			) 
-		} 
+	mdkystate:=0
+	Menu, mkeyonestate, check, Media_Key 4 All
+	Menu, mkeyonestate, uncheck, Media_Key 4 OneNote
+	MsgBox, 262144, Media_Play_Pause,
+	(
+		Play/Pause - Play/Pause 4 All
+	) 
+		
+}
+Return
+
+mediakey4onenotechoose:
+{
+	mdkystate:=1
+	Menu, mkeyonestate, uncheck, Media_Key 4 All
+	Menu, mkeyonestate, check, Media_Key 4 OneNote
+	MsgBox, 262144, Media_Play_Pause,
+	(
+		Play/Pause - ctrl + shift + 6 
+	)
 }
 Return
 
@@ -4224,24 +4231,16 @@ If (KeyPressCount = 1)
 				)
 			} 	
 	}
-else if (KeyPressCount = 2)
+else if (KeyPressCount = 2) ;speed up down and undo redo
 	{
 		spustate := !spustate
 		if (spustate=0)
 			{
-				MsgBox, 262144, Speed up/down,
-				(
-			        ^ - speed up
-			        `nv - speed down
-				) 
+				gosub, SpeedUpDownor_State
 			}
 		else if (spustate=1)
 			{
-				MsgBox, 262144, undo/redo,
-				(
-			        ^ - redo
-			        `nv - undo
-				) 
+				gosub, UndoRedo_State
 			} 
 	}
 else if (KeyPressCount = 3)
@@ -4249,20 +4248,11 @@ else if (KeyPressCount = 3)
 		cpcstate := !cpcstate
 		if (cpcstate=0)
 			{
-				MsgBox, 262144, copy/cut,
-				(
-			        copy - 1 press
-                    `ncut  - 1 press
-				) 
+				gosub, copycutchoose
 			}
 		else if (cpcstate=1)
 			{
-				MsgBox, 262144, copylink/copy/cut,
-				(
-			        copylink(onenote) - 1 press
-                                 `ncopy - 2 press
-                                  `ncut - 3 press
-				) 
+				gosub, copylinkcopycutchoose
 			} 
 	}
 else if (KeyPressCount = 4)
@@ -4288,17 +4278,11 @@ else if (KeyPressCount = 5)
 			mdkystate := !mdkystate
 			if (mdkystate=0)
 				{
-					MsgBox, 262144, Media_Play_Pause,
-					(
-						Play/Pause - Play/Pause
-					) 
+					gosub, mediakey4allchoose
 				}
 			else if (mdkystate=1)
 				{
-					MsgBox, 262144, Media_Play_Pause,
-					(
-						Play/Pause - ctrl + shift + 6
-					) 
+					gosub, mediakey4onenotechoose
 				} 
 		}
 else if (KeyPressCount > 5)
