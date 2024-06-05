@@ -469,7 +469,6 @@ Screenshot1orScreenshot2State0: ;create non-spaced labels for menu items
 	scrstate:=0
 	Menu, sharexshotstate, uncheck, ScrnShot - 1 || ReptShot - 2
 	Menu, sharexshotstate, check, ScrnShot - 2 || ReptShot - 1
-
 }
 Return
 
@@ -538,19 +537,9 @@ MediaPlay4AllorMediaPlay4NoxState0:
 {
 	mdastate:=0
 	SoundBeep, 300, 700
-	if (mdastate = 0)
-		{
-			Menu, playpausestate, check, Play Pause 4 All
-			Menu, playpausestate, uncheck, Play Pause 4 BlueStacks
-			if (fnstate = 0)
-				{
-					Menu, Tray, Icon, fndisableone_all.ico
-				}
-			else if (fnstate = 1)
-				{
-					Menu, Tray, Icon, fnenableone_all.ico
-				}
-		}
+	Menu, playpausestate, check, Play Pause 4 All
+	Menu, playpausestate, uncheck, Play Pause 4 BlueStacks
+	gosub, iconchanger
 }
 Return
 
@@ -558,19 +547,9 @@ MediaPlay4AllorMediaPlay4NoxState1:
 {
 	mdastate:=1
 	SoundBeep, 300, 700
-	if (mdastate = 1)
-		{
-			Menu, playpausestate, uncheck, Play Pause 4 All
-			Menu, playpausestate, check, Play Pause 4 BlueStacks
-			if (fnstate = 0)
-				{
-					Menu, Tray, Icon, fndisableone_nox.ico
-				}
-			else if (fnstate = 1)
-				{
-					Menu, Tray, Icon, fnenableone_nox.ico
-				}
-		}
+	Menu, playpausestate, uncheck, Play Pause 4 All
+	Menu, playpausestate, check, Play Pause 4 BlueStacks
+	gosub, iconchanger
 }
 Return
 
@@ -4289,34 +4268,19 @@ else if (KeyPressCount = 3)
 else if (KeyPressCount = 4)
 	{
 		mdastate:=!mdastate
-		SoundBeep, 300, 700
 		if (mdastate = 1)
 			{
 				SplashTextOn,250,60,,Play/Pause for Bluestack
 				Sleep 400
 				SplashTextOff
-				if (fnstate = 0)
-					{
-						Menu, Tray, Icon, fndisableone_nox.ico
-					}
-				else if (fnstate = 1)
-					{
-						Menu, Tray, Icon, fnenableone_nox.ico
-					}
+				gosub, MediaPlay4AllorMediaPlay4NoxState1
 			}
 		else if (mdastate = 0)
 			{
 				SplashTextOn,250,60,,Play/Pause for all 
 				Sleep 400
 				SplashTextOff
-				if (fnstate = 0)
-					{
-						Menu, Tray, Icon, fndisableone_all.ico
-					}
-				else if (fnstate = 1)
-					{
-						Menu, Tray, Icon, fnenableone_all.ico
-					}
+				gosub, MediaPlay4AllorMediaPlay4NoxState0
 			}
 	}
 else if (KeyPressCount = 5)
