@@ -3,7 +3,6 @@
 #Persistent
 ;#ErrorStdOut Error_logs.txt  ; Redirect errors to a log file named "error_log.txt"
 ;bluestackmode:=0
-mbtnstate:=0
 whelscrlfn:=0
 mdastate:= 0
 fnstate:= 0
@@ -26,26 +25,37 @@ sharexclipstate:=00
 Menu, sharexshotstate, Add, ScrnShot - 1 || ReptShot - 2, Screenshot1orScreenshot2State1
 Menu, sharexshotstate, Add, ScrnShot - 2 || ReptShot - 1, Screenshot1orScreenshot2State0
 Menu, sharexshotstate, check, ScrnShot - 2 || ReptShot - 1
+;---------------------------------------------------------------------------------------
 Menu, speedunrestate, Add, SpeedUp || SpeedDown, SpeedUpDownor_State
 Menu, speedunrestate, Add, Redo || Undo, UndoRedo_State
 Menu, speedunrestate, check, SpeedUp || SpeedDown
+;---------------------------------------------------------------------------------------
 Menu, copycutstate, Add, Copy || Cut, copycutchoose
 Menu, copycutstate, Add, CopyLinkOneNote || Copy || Cut, copylinkcopycutchoose
 Menu, copycutstate, check, Copy || Cut
+;---------------------------------------------------------------------------------------
 Menu, playpausestate, Add, Play Pause 4 All, MediaPlay4AllorMediaPlay4NoxState0
 Menu, playpausestate, Add, Play Pause 4 BlueStacks, MediaPlay4AllorMediaPlay4NoxState1
 Menu, playpausestate, check, Play Pause 4 All
+;---------------------------------------------------------------------------------------
 Menu, mkeyonestate, Add, Media_Key 4 All, mediakey4allchoose
 Menu, mkeyonestate, Add, Media_Key 4 OneNote, mediakey4onenotechoose
-Menu, mkeyonestate, check, Media_Key 4 All,
+Menu, mkeyonestate, check, Media_Key 4 All
+;---------------------------------------------------------------------------------------
 Menu, fnkeystate, Add, Enable, fnkeysenable
 Menu, fnkeystate, Add, Disable, fnkeysdisable
 Menu, fnkeystate, check, Disable
-Menu, scrolledstate, Add,
-Menu, mousembtnstate, Add,
-Menu, mouseebtnstate, Add,
+;---------------------------------------------------------------------------------------
+Menu, scrolledstate, Add, WheelUP - ScrollUp || WheelDown - ScrollDown, wheelscrollupdownchoose
+Menu, scrolledstate, Add, WheelUp - RightArrow || WheelDown - LeftArrow, wheelrightleftarrowchoose
+Menu, scrolledstate, check, WheelUP - ScrollUp || WheelDown - ScrollDown
+;----------------------------------------------------------------------------------------
+Menu, mousemdlbtnstate, Add, Enable, mousemdlbtnstatedisable
+Menu, mousemdlbtnstate, Add, Disable, mousemdlbtnstateenable
+Menu, mousemdlbtnstate, check, Disable
+;----------------------------------------------------------------------------------------
 Menu, lbtnmbtnclipstate, Add,
-Menu, mousesmbtnstate, Add,
+
 ;======================================================================================
 ;Menu, Tray icons, menu and texts
 Menu, Tray, NoStandard ;Pause reload and supsend will be removed 
@@ -60,8 +70,8 @@ Menu, Tray, Add, Media Key State, :mkeyonestate
 Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add, Fn Keys State, :fnkeystate
-Menu, Tray, Add, ScrollWheel - LeftArrow / RightArrow, wheelupdownarrow
-Menu, Tray, Add, Mouse_Middle_Button - Disable, mousembuttonenabledisable
+Menu, Tray, Add, ScrollWheel - State, :scrolledstate
+Menu, Tray, Add, Mouse_Middle_Button State, :mousemdlbtnstate
 Menu, Tray, Add, Mouse_Xtra_Buttons - LeftArrow / RightArrow, xbuttonkeystateenb
 Menu, Tray, Add
 Menu, Tray, Add
@@ -106,8 +116,8 @@ Menu, MNFunctions, Add, Media Key State, :mkeyonestate
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Fn Keys State, :fnkeystate
-Menu, MNFunctions, Add, ScrollWheel - LeftArrow / RightArrow, wheelupdownarrow
-Menu, MNFunctions, Add, Mouse_Middle_Button - Disable, mousembuttonenabledisable
+Menu, MNFunctions, Add, ScrollWheel - State, :scrolledstate
+Menu, MNFunctions, Add, Mouse_Middle_Button State, :mousemdlbtnstate
 Menu, MNFunctions, Add, Mouse_Xtra_Buttons - LeftArrow / RightArrow, xbuttonkeystateenb
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
@@ -621,41 +631,41 @@ fnkeysenable: ;mean fnkeys are enable
 }
 Return
 
-wheelupdownarrow:
+wheelscrollupdownchoose:
 {
-    whelscrlfn:=!whelscrlfn
-    if (whelscrlfn=0)
-        {
-            Menu, Tray, Rename, ScrollWheel - ScrollUp / ScrollDown, ScrollWheel - LeftArrow / RightArrow
-			Menu, MNFunctions, Rename, ScrollWheel - ScrollUp / ScrollDown, ScrollWheel - LeftArrow / RightArrow
-        }
-    else if (whelscrlfn=1)
-        {
-			Menu, Tray, Rename, ScrollWheel - LeftArrow / RightArrow, ScrollWheel - ScrollUp / ScrollDown
-			Menu, MNFunctions, Rename, ScrollWheel - LeftArrow / RightArrow, ScrollWheel - ScrollUp / ScrollDown
-        } 
+    whelscrlfn:=0
+	Menu, scrolledstate, check, WheelUP - ScrollUp || WheelDown - ScrollDown
+    Menu, scrolledstate, uncheck, WheelUp - RightArrow || WheelDown - LeftArrow
 }
 Return
 
-mousembuttonenabledisable:
+wheelrightleftarrowchoose:
 {
-    mbtnstate:=!mbtnstate
-    if (mbtnstate=0)
-        {
-            Menu, Tray, Rename, Mouse_Middle_Button - Enable, Mouse_Middle_Button - Disable
-			Menu, MNFunctions, Rename, Mouse_Middle_Button - Enable, Mouse_Middle_Button - Disable
-			SplashTextOn,250,50,,Scroll Button Disable
-            Sleep 400
-            SplashTextOff
-        }
-    else if (mbtnstate=1)
-        {
-            Menu, Tray, Rename, Mouse_Middle_Button - Disable, Mouse_Middle_Button - Enable
-			Menu, MNFunctions, Rename, Mouse_Middle_Button - Disable, Mouse_Middle_Button - Enable
-			SplashTextOn,250,50,,Scroll Button Enable
-            Sleep 400
-            SplashTextOff
-        } 
+	whelscrlfn:=1
+	Menu, scrolledstate, uncheck, WheelUP - ScrollUp || WheelDown - ScrollDown
+    Menu, scrolledstate, check, WheelUp - RightArrow || WheelDown - LeftArrow
+}
+Return
+
+mousemdlbtnstateenable:
+{
+    mbtnstate:=0
+	Menu, mousemdlbtnstate, uncheck, Enable
+	Menu, mousemdlbtnstate, check, Disable
+	SplashTextOn,250,50,,Mouse_Middle_Button Disable
+    Sleep 600
+    SplashTextOff
+}
+Return
+
+mousemdlbtnstatedisable:
+{
+    mbtnstate:=1
+	Menu, mousemdlbtnstate, check, Enable
+	Menu, mousemdlbtnstate, uncheck, Disable
+	SplashTextOn,250,50,,Mouse_Middle_Button Enable
+    Sleep 600
+    SplashTextOff
 }
 Return
 
