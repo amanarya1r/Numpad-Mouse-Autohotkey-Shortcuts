@@ -3,7 +3,6 @@
 #Persistent
 ;#ErrorStdOut Error_logs.txt  ; Redirect errors to a log file named "error_log.txt"
 ;bluestackmode:=0
-whelscrlfn:=0
 mdastate:= 0
 fnstate:= 0
 scrstate:=0
@@ -45,26 +44,37 @@ Menu, mkeyonestate, check, Media_Key 4 All
 Menu, fnkeystate, Add, Enable, fnkeysenable
 Menu, fnkeystate, Add, Disable, fnkeysdisable
 Menu, fnkeystate, check, Disable
-;---------------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------:Mouse scroll wheel state changer
 Menu, scrolledstate, Add, WheelUP - ScrollUp || WheelDown - ScrollDown, wheelscrollupdownchoose
 Menu, scrolledstate, Add, WheelUp - RightArrow || WheelDown - LeftArrow, wheelrightleftarrowchoose
 Menu, scrolledstate, check, WheelUP - ScrollUp || WheelDown - ScrollDown
-;----------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------;Mouse middle button state changer
 Menu, mousemdlbtnstate, Add, Enable, mousemdlbtnstatedisable
 Menu, mousemdlbtnstate, Add, Disable, mousemdlbtnstateenable
 Menu, mousemdlbtnstate, check, Disable
-;----------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------;Mouse extra button state changer
 Menu, mousextrbtnstate, Add, XBttn1 - LeftArrow || XBttn2 - RightArrow, xtrbttnlrarw
 Menu, mousextrbtnstate, Add, XBttn1 - WheelRight || XBttn2 - WheelLeft, xtrbttnwrwl
-Menu, mousextrbtnstate, check, XBttn1 - LeftArrow || XBttn2 - RightArrow
+Menu, mousextrbtnstate, check, XBttn1 - WheelRight || XBttn2 - WheelLeft
+;----------------------------------------------------------------------------------------;Screen clipper tool selecter
+Menu, clippingtoolselect, Add, AHK Screen Clipper, ahkscrnclipselect
+Menu, clippingtoolselect, Add, Sharex Screen Clipper, sharexscrnclipselect
+Menu, clippingtoolselect, check, AHK Screen Clipper
 ;----------------------------------------------------------------------------------------
-Menu, lbtnmbtnclipstate, Add,
+Menu, ahkbtnselector, Add, AHK_ScrnClip - MButton, ahkscnclipmdlbtnselect
+Menu, ahkbtnselector, Add, AHK_ScrnClip - RButton, ahkscncliprghtbtnselect
+Menu, ahkbtnselector, check, AHK_ScrnClip - RButton
+;----------------------------------------------------------------------------------------
+Menu, sharexbtnselector, Add, Sharex_ScrnClip - MButton, sharexclipmdlbtnselect
+Menu, sharexbtnselector, Add, Sharex_ScrnClip - RButton, sharexcliprghtbtnselect
+Menu, sharexbtnselector, check, Sharex_ScrnClip - RButton
+;----------------------------------------------------------------------------------------
 
 ;======================================================================================
 ;Menu, Tray icons, menu and texts
 Menu, Tray, NoStandard ;Pause reload and supsend will be removed 
 Menu, Tray, Tip, Dumo - All Rounder
-Menu, Tray, Icon, fndisableone_all.ico
+Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fndisableone_all.ico
 Menu, Tray, Add, Screenshot State, :sharexshotstate
 Menu, Tray, Add, SpeedUpDown_UnRe State, :speedunrestate
 Menu, Tray, Add, CopyCut/CopylinkCopyCut State, :copycutstate
@@ -79,14 +89,14 @@ Menu, Tray, Add, Mouse_Middle_Button State, :mousemdlbtnstate
 Menu, Tray, Add, Mouse_Xtra_Buttons State, :mousextrbtnstate
 Menu, Tray, Add
 Menu, Tray, Add
-Menu, Tray, Add, MouseButton - SharexClipping, scrnshrxclip
+Menu, Tray, Add, Clipping Tool, :clippingtoolselect
 Menu, Tray, Add
 Menu, Tray, Add
-Menu, Tray, Add, Mouse_ScrnClip - MButton, mscrncliplmbutton
-Menu, Tray, Check, Mouse_ScrnClip - MButton
+Menu, Tray, Add, AHK Clip Activate Button, :ahkbtnselector
+Menu, Tray, Check, AHK Clip Activate Button
 Menu, Tray, Add
 Menu, Tray, Add
-Menu, Tray, Add, Mouse_Sharex - MButton, mbuttonsharexscr 
+Menu, Tray, Add, Sharex Clip Activate Button, :sharexbtnselector
 Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add, Lecture Recordings, lectruerecordingopen
@@ -125,14 +135,14 @@ Menu, MNFunctions, Add, Mouse_Middle_Button State, :mousemdlbtnstate
 Menu, MNFunctions, Add, Mouse_Xtra_Buttons State, :mousextrbtnstate
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
-Menu, MNFunctions, Add, MouseButton - SharexClipping, scrnshrxclip
+Menu, MNFunctions, Add, Clipping Tool, :clippingtoolselect
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
-Menu, MNFunctions, Add, Mouse_ScrnClip - MButton, mscrncliplmbutton
-Menu, MNFunctions, Check, Mouse_ScrnClip - MButton
+Menu, MNFunctions, Add, AHK Clip Activate Button, :ahkbtnselector
+Menu, MNFunctions, Check, AHK Clip Activate Button
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
-Menu, MNFunctions, Add, Mouse_Sharex - MButton, mbuttonsharexscr
+Menu, MNFunctions, Add, Sharex Clip Activate Button, :sharexbtnselector
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Lecture Recordings, lectruerecordingopen
@@ -479,6 +489,7 @@ mbclickmonitor4left:
     SetTimer, mbclickmonitor4left, Off
     Tooltip,
 return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 Screenshot1orScreenshot2State0: ;create non-spaced labels for menu items
 {
@@ -495,6 +506,7 @@ Screenshot1orScreenshot2State1:
 	Menu, sharexshotstate, uncheck, ScrnShot - 2 || ReptShot - 1
 }
 Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 SpeedUpDownor_State:
 {
@@ -521,6 +533,7 @@ UndoRedo_State:
 	) 
 }
 Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 copycutchoose:
 {
@@ -548,6 +561,7 @@ copylinkcopycutchoose:
 	)  
 }
 Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 MediaPlay4AllorMediaPlay4NoxState0:
 {
@@ -568,6 +582,7 @@ MediaPlay4AllorMediaPlay4NoxState1:
 	gosub, iconchanger
 }
 Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 Bluestackflscmxmmd:
 {
@@ -588,6 +603,7 @@ Bluestackflscmxmmd:
 		} 
 }
 Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 mediakey4allchoose:
 {
@@ -613,6 +629,7 @@ mediakey4onenotechoose:
 	)
 }
 Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 fnkeysdisable: ;means fnkeys are disable 
 {
@@ -634,6 +651,7 @@ fnkeysenable: ;mean fnkeys are enable
 
 }
 Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 wheelscrollupdownchoose:
 {
@@ -650,6 +668,7 @@ wheelrightleftarrowchoose:
     Menu, scrolledstate, check, WheelUp - RightArrow || WheelDown - LeftArrow
 }
 Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 mousemdlbtnstateenable:
 {
@@ -672,6 +691,7 @@ mousemdlbtnstatedisable:
     SplashTextOff
 }
 Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 xtrbttnlrarw:
 {
@@ -688,137 +708,66 @@ xtrbttnwrwl:
 	Menu, mousextrbtnstate, check, XBttn1 - WheelRight || XBttn2 - WheelLeft
 }
 Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
-scrnshrxclip:
+ahkscrnclipselect:
 {
-	If (clipperchoose=0) ;ahk based clipper changed to sharex based
-		{
-			Menu, Tray, Rename, MouseButton - SharexClipping, MouseButton - ScreenClipping 
-			Menu, MNFunctions, Rename, MouseButton - SharexClipping, MouseButton - ScreenClipping 
-			If (screenclipstate = 10 AND sharexclipstate = 00) ;ahk based clipper which activates on rbutton
-				{
-					Menu, Tray, Uncheck, Mouse_ScrnClip - MButton ;unchecks the scrnclip for mbutton
-					Menu, MNFunctions, Uncheck, Mouse_ScrnClip - MButton
-                    Menu, Tray, Check, Mouse_Sharex - MButton
-					Menu, MNFunctions, Check, Mouse_Sharex - MButton
-				}
-            Else If (screenclipstate = 10 AND sharexclipstate = 11)
-                {
-                    Menu, Tray, Uncheck, Mouse_ScrnClip - MButton ;unchecks the scrnclip for mbutton
-					Menu, MNFunctions, Uncheck, Mouse_ScrnClip - MButton
-                    Menu, Tray, Check, Mouse_Sharex - LButton
-					Menu, MNFunctions, Check, Mouse_Sharex - LButton
-                }
-			Else If (screenclipstate = 01 AND sharexclipstate = 00) ;ahk based clipper which activates on mbutton
-				{
-					Menu, Tray, Uncheck, Mouse_ScrnClip - LButton
-					Menu, MNFunctions, Uncheck, Mouse_ScrnClip - LButton
-                    Menu, Tray, Check, Mouse_Sharex - MButton
-					Menu, MNFunctions, Check, Mouse_Sharex - MButton
-				} 
-            Else If (screenclipstate = 01 AND sharexclipstate = 11)
-                {
-                    Menu, Tray, Uncheck, Mouse_ScrnClip - LButton
-					Menu, MNFunctions, Uncheck, Mouse_ScrnClip - LButton
-                    Menu, Tray, Check, Mouse_Sharex - LButton
-					Menu, MNFunctions, Check, Mouse_Sharex - LButton
-                }
-			clipperchoose := 1		
-		}
-	Else If (clipperchoose=1) ;sharex based clipper changed to ahk based 
-		{
-			Menu, Tray, Rename, MouseButton - ScreenClipping, MouseButton - SharexClipping 
-			Menu, MNFunctions, Rename, MouseButton - ScreenClipping, MouseButton - SharexClipping 
-			If (screenclipstate = 10 AND sharexclipstate = 00)
-				{
-					Menu, Tray, Uncheck, Mouse_Sharex - MButton
-					Menu, MNFunctions, Uncheck, Mouse_Sharex - MButton
-                    Menu, Tray, Check, Mouse_ScrnClip - MButton
-					Menu, MNFunctions, Check, Mouse_ScrnClip - MButton
-				}
-            Else If (screenclipstate = 01 AND sharexclipstate = 00)
-                {
-                    Menu, Tray, Uncheck, Mouse_Sharex - MButton
-					Menu, MNFunctions, Uncheck, Mouse_Sharex - MButton
-                    Menu, Tray, Check, Mouse_ScrnClip - LButton
-					Menu, MNFunctions, Check, Mouse_ScrnClip - LButton
-                }
-			Else If (screenclipstate = 10 AND sharexclipstate = 11)
-				{
-					Menu, Tray, Uncheck, Mouse_Sharex - LButton
-					Menu, MNFunctions, Uncheck, Mouse_Sharex - LButton
-                    Menu, Tray, Check, Mouse_ScrnClip - MButton
-					Menu, MNFunctions, Check, Mouse_ScrnClip - MButton
-				}
-            Else If (screenclipstate = 01 AND sharexclipstate = 11)
-                {
-                    Menu, Tray, Uncheck, Mouse_Sharex - LButton
-					Menu, MNFunctions, Uncheck, Mouse_Sharex - LButton
-                    Menu, Tray, Check, Mouse_ScrnClip - LButton
-					Menu, MNFunctions, Check, Mouse_ScrnClip - LButton	
-                }
-			clipperchoose := 0
-		}  
+	clipperchoose:=0
+	Menu, clippingtoolselect, check, AHK Screen Clipper
+	Menu, clippingtoolselect, uncheck, Sharex Screen Clipper
+	Menu, Tray, check, AHK Clip Activate Button
+	Menu, MNFunctions, check, AHK Clip Activate Button
+	Menu, Tray, uncheck, Sharex Clip Activate Button
+	Menu, MNFunctions, uncheck, Sharex Clip Activate Button
 }
 Return
 
-mscrncliplmbutton:
+sharexscrnclipselect:
 {
-    if (screenclipstate = 10 AND clipperchoose = 0) 
-        {
-            screenclipstate := 01
-			Menu, Tray, Rename, Mouse_ScrnClip - MButton, Mouse_ScrnClip - LButton
-			Menu, MNFunctions, Rename, Mouse_ScrnClip - MButton, Mouse_ScrnClip - LButton
-			MsgBox, 262144, Screen Clipping,
-            (
-                MButton Long Press - Clipping
-                `nLButton Click - Legacy Function
-				`nMbutton Click - 1.Pause 2.Menu 
-            )
-        } 
-	else if (screenclipstate = 01 AND clipperchoose = 0)
-        {
-            screenclipstate := 10
-			Menu, Tray, Rename, Mouse_ScrnClip - LButton, Mouse_ScrnClip - MButton
-			Menu, MNFunctions, Rename, Mouse_ScrnClip - LButton, Mouse_ScrnClip - MButton
-			MsgBox, 262144, Screen Clipping,
-            (
-				LButton Long Press - Clipping
-                `nLButton Click - Legacy Function
-				`nMbutton Click - 1.Pause 2.Menu  
-            )
-        }
+	clipperchoose:=1
+	Menu, clippingtoolselect, uncheck, AHK Screen Clipper
+	Menu, clippingtoolselect, check, Sharex Screen Clipper
+	Menu, Tray, uncheck, AHK Clip Activate Button
+	Menu, MNFunctions, uncheck, AHK Clip Activate Button
+	Menu, Tray, check, Sharex Clip Activate Button
+	Menu, MNFunctions, check, Sharex Clip Activate Button
+}
+Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
+
+ahkscncliprghtbtnselect:
+{
+    screenclipstate := 10
+	Menu, ahkbtnselector, uncheck, AHK_ScrnClip - MButton
+    Menu, ahkbtnselector, check, AHK_ScrnClip - RButton
 }
 Return
 
-mbuttonsharexscr:
+ahkscnclipmdlbtnselect:
 {
-    if (sharexclipstate = 11 AND clipperchoose = 1)
-        {
-            sharexclipstate := 00
-			Menu, Tray, Rename, Mouse_Sharex - LButton, Mouse_Sharex - MButton
-			Menu, MNFunctions, Rename, Mouse_Sharex - LButton, Mouse_Sharex - MButton
-			MsgBox, 262144, Screen Clipping,
-            (
-                LButton Long Press - Sharex Clipping
-                `nLButton Click - Legacy Function
-				`nMbutton Click - 1.Pause 2.Menu  
-            )
-        } 
-	else if (sharexclipstate = 00 AND clipperchoose = 1)
-        {
-            sharexclipstate := 11
-			Menu, Tray, Rename, Mouse_Sharex - MButton, Mouse_Sharex - LButton
-			Menu, MNFunctions, Rename, Mouse_Sharex - MButton, Mouse_Sharex - LButton
-			MsgBox, 262144, Sharex Mbutton Clipping,
-            (
-				MButton Long Press - Sharex Clipping
-                `nLButton Click - Legacy Function
-				`nMbutton Click - 1.Pause 2.Menu  
-            )
-        }
+	screenclipstate := 01
+	Menu, ahkbtnselector, check, AHK_ScrnClip - MButton
+    Menu, ahkbtnselector, uncheck, AHK_ScrnClip - RButton
 }
 Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
+
+sharexcliprghtbtnselect:
+{
+    sharexclipstate := 00
+	Menu, sharexbtnselector, uncheck, Sharex_ScrnClip - MButton
+    Menu, sharexbtnselector, check, Sharex_ScrnClip - RButton
+}
+Return
+
+sharexclipmdlbtnselect:
+{
+	sharexclipstate := 11
+	Menu, sharexbtnselector, check, Sharex_ScrnClip - MButton
+    Menu, sharexbtnselector, uncheck, Sharex_ScrnClip - RButton
+}
+Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 lectruerecordingopen:
 run, C:\Users\amana\Music\Lecture Recordings
