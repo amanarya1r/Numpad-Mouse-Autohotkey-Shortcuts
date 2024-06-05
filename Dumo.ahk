@@ -54,6 +54,10 @@ Menu, mousemdlbtnstate, Add, Enable, mousemdlbtnstatedisable
 Menu, mousemdlbtnstate, Add, Disable, mousemdlbtnstateenable
 Menu, mousemdlbtnstate, check, Disable
 ;----------------------------------------------------------------------------------------
+Menu, mousextrbtnstate, Add, XBttn1 - LeftArrow || XBttn2 - RightArrow, xtrbttnlrarw
+Menu, mousextrbtnstate, Add, XBttn1 - WheelRight || XBttn2 - WheelLeft, xtrbttnwrwl
+Menu, mousextrbtnstate, check, XBttn1 - LeftArrow || XBttn2 - RightArrow
+;----------------------------------------------------------------------------------------
 Menu, lbtnmbtnclipstate, Add,
 
 ;======================================================================================
@@ -72,7 +76,7 @@ Menu, Tray, Add
 Menu, Tray, Add, Fn Keys State, :fnkeystate
 Menu, Tray, Add, ScrollWheel - State, :scrolledstate
 Menu, Tray, Add, Mouse_Middle_Button State, :mousemdlbtnstate
-Menu, Tray, Add, Mouse_Xtra_Buttons - LeftArrow / RightArrow, xbuttonkeystateenb
+Menu, Tray, Add, Mouse_Xtra_Buttons State, :mousextrbtnstate
 Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add, MouseButton - SharexClipping, scrnshrxclip
@@ -118,7 +122,7 @@ Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Fn Keys State, :fnkeystate
 Menu, MNFunctions, Add, ScrollWheel - State, :scrolledstate
 Menu, MNFunctions, Add, Mouse_Middle_Button State, :mousemdlbtnstate
-Menu, MNFunctions, Add, Mouse_Xtra_Buttons - LeftArrow / RightArrow, xbuttonkeystateenb
+Menu, MNFunctions, Add, Mouse_Xtra_Buttons State, :mousextrbtnstate
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, MouseButton - SharexClipping, scrnshrxclip
@@ -669,29 +673,19 @@ mousemdlbtnstatedisable:
 }
 Return
 
-xbuttonkeystateenb:
+xtrbttnlrarw:
 {
-    xbuttonstate:=!xbuttonstate
-    if (xbuttonstate = 0)
-        {
-            Menu, MNFunctions, Rename, Mouse_Xtra_Buttons - WheelLeft / WheelRight, Mouse_Xtra_Buttons - LeftArrow / RightArrow
-			Menu, Tray, Rename, Mouse_Xtra_Buttons - WheelLeft / WheelRight, Mouse_Xtra_Buttons - LeftArrow / RightArrow
-			MsgBox, 262144, XButton Left/Rigt,
-            (
-				XButton1 - Left
-                `nXButton2 - Right
-            )
-        }
-    else if (xbuttonstate = 1)
-        {
-            Menu, MNFunctions, Rename, Mouse_Xtra_Buttons - LeftArrow / RightArrow, Mouse_Xtra_Buttons - WheelLeft / WheelRight
-			Menu, Tray, Rename, Mouse_Xtra_Buttons - LeftArrow / RightArrow, Mouse_Xtra_Buttons - WheelLeft / WheelRight
-			MsgBox, 262144, XButton WheelL/WheelR,
-            (
-                XButton1 - Wheel Right
-                `nXButton2 - Whell Left
-            )
-        } 
+    xbuttonstate:=0
+	Menu, mousextrbtnstate, check, XBttn1 - LeftArrow || XBttn2 - RightArrow
+	Menu, mousextrbtnstate, uncheck, XBttn1 - WheelRight || XBttn2 - WheelLeft
+}
+Return
+
+xtrbttnwrwl:
+{
+	xbuttonstate:=1
+	Menu, mousextrbtnstate, uncheck, XBttn1 - LeftArrow || XBttn2 - RightArrow
+	Menu, mousextrbtnstate, check, XBttn1 - WheelRight || XBttn2 - WheelLeft
 }
 Return
 
