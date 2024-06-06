@@ -55,7 +55,7 @@ Menu, mousemdlbtnstate, check, Disable
 ;----------------------------------------------------------------------------------------;Mouse extra button state changer
 Menu, mousextrbtnstate, Add, XBttn1 - LeftArrow || XBttn2 - RightArrow, xtrbttnlrarw
 Menu, mousextrbtnstate, Add, XBttn1 - WheelRight || XBttn2 - WheelLeft, xtrbttnwrwl
-Menu, mousextrbtnstate, check, XBttn1 - WheelRight || XBttn2 - WheelLeft
+Menu, mousextrbtnstate, check, XBttn1 - LeftArrow || XBttn2 - RightArrow
 ;----------------------------------------------------------------------------------------;Screen clipper tool selecter
 Menu, clippingtoolselect, Add, AHK Screen Clipper, ahkscrnclipselect
 Menu, clippingtoolselect, Add, Sharex Screen Clipper, sharexscrnclipselect
