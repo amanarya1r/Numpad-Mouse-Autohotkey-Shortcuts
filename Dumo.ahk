@@ -15,6 +15,7 @@ xbuttonstate:=0
 clipperchoose:=0
 screenclipstate:=10
 sharexclipstate:=00
+pstpstplnste:=0
 ;======================================================================================
 ;the above script is tweaked and you can only copy to clipboard on scroll up and autocopy to clipbaord function is disabled
 ;to change it just change value of clip from 0 to 1 and also comment the line 679 ;this line is of function checkahkguisclip()
@@ -32,6 +33,10 @@ Menu, speedunrestate, check, SpeedUp || SpeedDown
 Menu, copycutstate, Add, Copy || Cut, copycutchoose
 Menu, copycutstate, Add, CopyLinkOneNote || Copy || Cut, copylinkcopycutchoose
 Menu, copycutstate, check, Copy || Cut
+;---------------------------------------------------------------------------------------
+Menu, pastestate, Add, Paste, pasteon1press 
+Menu, pastestate, Add, 1. Paste || 2. Paste Plain OneNote, pasteon1presspasteplain2press
+Menu, pastestate, check, Paste 
 ;---------------------------------------------------------------------------------------
 Menu, playpausestate, Add, Play Pause 4 All, MediaPlay4AllorMediaPlay4NoxState0
 Menu, playpausestate, Add, Play Pause 4 BlueStacks, MediaPlay4AllorMediaPlay4NoxState1
@@ -60,11 +65,11 @@ Menu, mousextrbtnstate, check, XBttn1 - LeftArrow || XBttn2 - RightArrow
 Menu, clippingtoolselect, Add, AHK Screen Clipper, ahkscrnclipselect
 Menu, clippingtoolselect, Add, Sharex Screen Clipper, sharexscrnclipselect
 Menu, clippingtoolselect, check, AHK Screen Clipper
-;----------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------;ahk screen clipper activating button selector
 Menu, ahkbtnselector, Add, AHK_ScrnClip - MButton, ahkscnclipmdlbtnselect
 Menu, ahkbtnselector, Add, AHK_ScrnClip - RButton, ahkscncliprghtbtnselect
 Menu, ahkbtnselector, check, AHK_ScrnClip - RButton
-;----------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------;sharex screen clipper activating button selector
 Menu, sharexbtnselector, Add, Sharex_ScrnClip - MButton, sharexclipmdlbtnselect
 Menu, sharexbtnselector, Add, Sharex_ScrnClip - RButton, sharexcliprghtbtnselect
 Menu, sharexbtnselector, check, Sharex_ScrnClip - RButton
@@ -77,7 +82,10 @@ Menu, Tray, Tip, Dumo - All Rounder
 Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fndisableone_all.ico
 Menu, Tray, Add, Screenshot State, :sharexshotstate
 Menu, Tray, Add, SpeedUpDown_UnRe State, :speedunrestate
+Menu, Tray, Add
 Menu, Tray, Add, CopyCut/CopylinkCopyCut State, :copycutstate
+Menu, Tray, Add, Paste/PastePastePlain State, :pastestate
+Menu, Tray, Add
 Menu, Tray, Add, Play Pause State, :playpausestate
 ;Menu, Tray, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
 Menu, Tray, Add, Media Key State, :mkeyonestate
@@ -123,7 +131,10 @@ Menu, Tray, Add, Exit App, exiterapp
 ;context menu shower 
 Menu, MNFunctions, Add, Screenshot State, :sharexshotstate
 Menu, MNFunctions, Add, SpeedUpDown_UnRe State, :speedunrestate
+Menu, MNFunctions, Add
 Menu, MNFunctions, Add, CopyCut/CopylinkCopyCut State, :copycutstate
+Menu, MNFunctions, Add, Paste/PastePastePlain State, :pastestate
+Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Play Pause State, :playpausestate
 ;Menu, MNFunctions, Add, Bluestack Fullscreen/Maximize Mode, Bluestackflscmxmmd
 Menu, MNFunctions, Add, Media Key State, :mkeyonestate
@@ -152,6 +163,9 @@ Menu, MNFunctions, Add
 Menu, MNFunctions, Add, OneNote, OneNoterunner
 Menu, MNFunctions, Add, Calculator, calculatorrunneropen
 Menu, MNFunctions, Add, Notepad, notepadrunneropen
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add, Edit App Script, editscript
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Reload App, appreloader
@@ -559,6 +573,29 @@ copylinkcopycutchoose:
 					`ncopy - 2 press
 				 	 `ncut - 3 press
 	)  
+}
+Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
+
+pasteon1press:
+{
+	pstpstplnste:=0
+	Menu, pastestate, check, Paste
+	Menu, pastestate, uncheck, 1. Paste || 2. Paste Plain OneNote
+	SplashTextOn,150,40,, Paste
+    Sleep 600
+    SplashTextOff
+}
+Return
+
+pasteon1presspasteplain2press:
+{
+	pstpstplnste:=1
+	Menu, pastestate, uncheck, Paste
+	Menu, pastestate, check, 1. Paste || 2. Paste Plain OneNote
+	SplashTextOn,300,50,, 1. Paste || 2. Paste Plain OneNote
+    Sleep 600
+    SplashTextOff
 }
 Return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4295,7 +4332,49 @@ Tooltip,
 return
 
 ;Paste
-NumpadMult::^v
+NumpadMult::
+If (KeyPressCount > 0)
+	{
+		KeyPressCount +=1
+	}
+else
+	{
+		KeyPressCount :=1
+	}
+if (KeyPressCount <3)
+	{
+		Tooltip, %KeyPressCount%
+	}
+SetTimer, twicepasteplainmonitor, 300
+return
+twicepasteplainmonitor:
+if (pstpstplnste=0)
+	{
+		SendInput, ^v
+	}
+else if (pstpstplnste=1)
+	{
+        If (KeyPressCount = 1)
+            {
+                SendInput, ^v
+                ToolTip, Paste
+                Sleep 400
+            }
+        else if (KeyPressCount > 1)
+            {
+                if winexist("ahk_exe ONENOTE.EXE")
+					{
+					  	WinActivate
+						send {AppsKey}t
+						ToolTip, Paste Plain(OneNote)
+						Sleep 400
+					}
+            }
+    }
+KeyPressCount := 0
+SetTimer, twicepasteplainmonitor, Off
+Tooltip,
+return
 
 ;Copy and Cut
 NumpadSub::
@@ -4755,9 +4834,16 @@ else
 	{
 		KeyPressCount :=1
 	}
-if (KeyPressCount <3)
+if (KeyPressCount <4)
 	{
-		Tooltip, %KeyPressCount% `n1. Paste `n2. Windows Clipboard 
+		if (pstpstplnste=0)
+			{
+				Tooltip, %KeyPressCount% `n1. Paste `n3. Windows Clipboard 
+			}
+		else if (pstpstplnste=1)
+			{
+				Tooltip, %KeyPressCount% `n1. Paste `n2. Paste Plain `n3. Windows Clipboard 
+			} 
 	}
 SetTimer, pastewmanager, 300
 return
@@ -4766,7 +4852,21 @@ If (KeyPressCount = 1)
 	{
 		SendInput, ^v
 	}
-else if (KeyPressCount > 1)
+else if (KeyPressCount = 2)
+	{
+		if winexist("ahk_exe ONENOTE.EXE") AND pstpstplnste=1
+			{
+				WinActivate
+				send {AppsKey}t
+				ToolTip, Paste Plain(OneNote)
+				Sleep 400
+			}
+		else if (pstpstplnste=0)
+			{
+				SendInput, ^v
+			}
+	}
+else if (KeyPressCount > 2)
 	{
 		SendInput, ^v
 		SplashTextOn,210,40,,Windows Clipboard
