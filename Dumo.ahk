@@ -864,7 +864,7 @@ fnkeysdisable: ;means fnkeys are disable
 	SoundBeep, 900, 500
 	Menu, fnkeystate, check, Disable
 	Menu, fnkeystate, uncheck, Enable
-	SplashTextOn,300,40,,Fn AHK Keys Disable
+	SplashTextOn,250,40,,Fn AHK Keys Disable
 	Sleep 800
 	SplashTextOff
 	gosub, iconchanger
@@ -877,7 +877,7 @@ fnkeysenable: ;mean fnkeys are enable
 	SoundBeep, 900, 500
 	Menu, fnkeystate, uncheck, Disable
 	Menu, fnkeystate, check, Enable
-	SplashTextOn,300,40,,Fn AHK Keys Enable
+	SplashTextOn,250,40,,Fn AHK Keys Enable
 	Sleep 800
 	SplashTextOff
 	gosub, iconchanger
@@ -1125,12 +1125,12 @@ If (KeyPressCount = 1)
 }
 Else If (KeyPressCount > 1)
 {
-	numpadkeytoggle=!numpadkeytoggle
+	numpadkeytoggle:=!numpadkeytoggle
 	if (numpadkeytoggle=0)
 		{
 			gosub, numpadkeysenable
 		}
-		else if (numpadkeytoggle=1)
+	else if (numpadkeytoggle=1)
 		{
 			gosub, numpadkeysdisable
 		}
