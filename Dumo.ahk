@@ -30,11 +30,11 @@ Menu, sharexshotstate, check, ScrnShot - 2 || ReptShot - 1
 Menu, speedunrestate, Add, SpeedUp || SpeedDown, SpeedUpDownor_State
 Menu, speedunrestate, Add, Redo || Undo, UndoRedo_State
 Menu, speedunrestate, check, SpeedUp || SpeedDown
-;---------------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------; copycut, copylinkcopycut 4 onenote
 Menu, copycutstate, Add, Copy || Cut, copycutchoose
 Menu, copycutstate, Add, CopyLinkOneNote || Copy || Cut, copylinkcopycutchoose
 Menu, copycutstate, check, Copy || Cut
-;---------------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------; paste, plain paste 4 onenote
 Menu, pastestate, Add, Paste, pasteon1press 
 Menu, pastestate, Add, 1. Paste || 2. Paste Plain OneNote, pasteon1presspasteplain2press
 Menu, pastestate, check, Paste 
@@ -46,10 +46,14 @@ Menu, playpausestate, check, Play Pause 4 All
 Menu, mkeyonestate, Add, Media_Key 4 All, mediakey4allchoose
 Menu, mkeyonestate, Add, Media_Key 4 OneNote, mediakey4onenotechoose
 Menu, mkeyonestate, check, Media_Key 4 All
-;---------------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------;fn ahk key state
 Menu, fnkeystate, Add, Enable, fnkeysenable
 Menu, fnkeystate, Add, Disable, fnkeysdisable
 Menu, fnkeystate, check, Disable
+;---------------------------------------------------------------------------------------;Numpad ahk key state
+Menu, numpadkeystate, Add, Enable, numpadkeysenable
+Menu, numpadkeystate, Add, Disable, numpadkeysdisable
+Menu, numpadkeystate, check, Enable
 ;---------------------------------------------------------------------------------------:Mouse scroll wheel state changer
 Menu, scrolledstate, Add, WheelUP - ScrollUp || WheelDown - ScrollDown, wheelscrollupdownchoose
 Menu, scrolledstate, Add, WheelUp - RightArrow || WheelDown - LeftArrow, wheelrightleftarrowchoose
@@ -92,7 +96,10 @@ Menu, Tray, Add, Play Pause State, :playpausestate
 Menu, Tray, Add, Media Key State, :mkeyonestate
 Menu, Tray, Add
 Menu, Tray, Add
-Menu, Tray, Add, Fn Keys State, :fnkeystate
+Menu, Tray, Add, Fn AHK Keys State, :fnkeystate
+Menu, Tray, Add
+Menu, Tray, Add, Numpad AHK Kyes State, :numpadkeystate
+Menu, Tray, Add
 Menu, Tray, Add, ScrollWheel - State, :scrolledstate
 Menu, Tray, Add, Mouse_Middle_Button State, :mousemdlbtnstate
 Menu, Tray, Add, Mouse_Xtra_Buttons State, :mousextrbtnstate
@@ -142,6 +149,9 @@ Menu, MNFunctions, Add, Media Key State, :mkeyonestate
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Fn Keys State, :fnkeystate
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add, Numpad AHK Kyes State, :numpadkeystate
+Menu, MNFunctions, Add
 Menu, MNFunctions, Add, ScrollWheel - State, :scrolledstate
 Menu, MNFunctions, Add, Mouse_Middle_Button State, :mousemdlbtnstate
 Menu, MNFunctions, Add, Mouse_Xtra_Buttons State, :mousextrbtnstate
@@ -505,73 +515,128 @@ mbclickmonitor4left:
     Tooltip,
 return
 
-audiofilecopy:
- ; Retrieve files in a certain directory sorted by modification date:
- FileList :=  "" ; Initialize to be blank
- ; Create a list of those files consisting of the time the file was modified and the file path separated by tab
- Loop, C:\Users\amana\Music\Lecture Recordings\*.mp3*
-	 FileList .= A_LoopFileTimeModified . "`t" . A_LoopFileLongPath . "`n"
- Sort, FileList, R  ;   ; Sort by time modified in reverse order
- Loop, Parse, FileList, `n
-	 {
-		 If (A_LoopField = "") ; omit the last linefeed (blank item) at the end of the list.
-			 Continue
-		 StringSplit, FileItem, A_LoopField, %A_Tab%  ; Split into two parts at the tab char
-		 ; FileItem1 is FileTimeModified und FileItem2 is FileName
-			 ClipBoardSetFiles(FileItem2)
-			 Break
-	 }
+xKeyPressMonitor:
+If (KeyPressCount = 1)
+	{
+		If (recstartv = 1)
+            {
+                recstartv := !recstartv
+                recpausev := 0
+                SendInput, ^+{Space}
+				; Retrieve files in a certain directory sorted by modification date:
+				FileList :=  "" ; Initialize to be blank
+				; Create a list of those files consisting of the time the file was modified and the file path separated by tab
+				Loop, C:\Users\amana\Music\Lecture Recordings\*.mp3*
+					FileList .= A_LoopFileTimeModified . "`t" . A_LoopFileLongPath . "`n"
+				Sort, FileList, R  ;   ; Sort by time modified in reverse order
+				Loop, Parse, FileList, `n
+					{
+						If (A_LoopField = "") ; omit the last linefeed (blank item) at the end of the list.
+							Continue
+						StringSplit, FileItem, A_LoopField, %A_Tab%  ; Split into two parts at the tab char
+						; FileItem1 is FileTimeModified und FileItem2 is FileName
+							ClipBoardSetFiles(FileItem2)
+							Break
+					}
 
- ClipboardSetFiles(FilesToSet, DropEffect := "Copy") {
-	 ; FilesToSet - list of fully qualified file pathes separated by "`n" or "`r`n"
-	 ; DropEffect - preferred drop effect, either "Copy", "Move" or "" (empty string)
-	 Static TCS := A_IsUnicode ? 2 : 1 ; size of a TCHAR
-	 Static PreferredDropEffect := DllCall("RegisterClipboardFormat", "Str", "Preferred DropEffect")
-	 Static DropEffects := {1: 1, 2: 2, Copy: 1, Move: 2}
-	 ; -------------------------------------------------------------------------------------------------------------------
-	 ; Count files and total string length
-	 TotalLength := 0
-	 FileArray := []
-	 Loop, Parse, FilesToSet, `n, `r
-	 {
-		 If (Length := StrLen(A_LoopField))
-			 FileArray.Push({Path: A_LoopField, Len: Length + 1})
-		 TotalLength += Length
-	 }
-	 FileCount := FileArray.Length()
-	 If !(FileCount && TotalLength)
-		 Return False
-	 ; -------------------------------------------------------------------------------------------------------------------
-	 ; Add files to the clipboard
-	 If DllCall("OpenClipboard", "Ptr", A_ScriptHwnd) && DllCall("EmptyClipboard") {
-		 ; HDROP format ---------------------------------------------------------------------------------------------------
-		 ; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
-		 hDrop := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 20 + (TotalLength + FileCount + 1) * TCS, "UPtr")
-		 pDrop := DllCall("GlobalLock", "Ptr" , hDrop)
-		 Offset := 20
-		 NumPut(Offset, pDrop + 0, "UInt")         ; DROPFILES.pFiles = offset of file list
-		 NumPut(!!A_IsUnicode, pDrop + 16, "UInt") ; DROPFILES.fWide = 0 --> ANSI, fWide = 1 --> Unicode
-		 For Each, File In FileArray
-			 Offset += StrPut(File.Path, pDrop + Offset, File.Len) * TCS
-		 DllCall("GlobalUnlock", "Ptr", hDrop)
-		 DllCall("SetClipboardData","UInt", 0x0F, "UPtr", hDrop) ; 0x0F = CF_HDROP
-		 ; Preferred DropEffect format ------------------------------------------------------------------------------------
-		 If (DropEffect := DropEffects[DropEffect]) {
-			 ; Write Preferred DropEffect structure to clipboard to switch between copy/cut operations
-			 ; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
-			 hMem := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 4, "UPtr")
-			 pMem := DllCall("GlobalLock", "Ptr", hMem)
-			 NumPut(DropEffect, pMem + 0, "UChar")
-			 DllCall("GlobalUnlock", "Ptr", hMem)
-			 DllCall("SetClipboardData", "UInt", PreferredDropEffect, "Ptr", hMem)
-		 }
-		 DllCall("CloseClipboard")
-		 Return True
-	 }
-	 Return False
- } 
- Return
-;/////////////////////////////////////////////////////////////////////////////////////////////////
+				ClipboardSetFiles(FilesToSet, DropEffect := "Copy") {
+					; FilesToSet - list of fully qualified file pathes separated by "`n" or "`r`n"
+					; DropEffect - preferred drop effect, either "Copy", "Move" or "" (empty string)
+					Static TCS := A_IsUnicode ? 2 : 1 ; size of a TCHAR
+					Static PreferredDropEffect := DllCall("RegisterClipboardFormat", "Str", "Preferred DropEffect")
+					Static DropEffects := {1: 1, 2: 2, Copy: 1, Move: 2}
+					; -------------------------------------------------------------------------------------------------------------------
+					; Count files and total string length
+					TotalLength := 0
+					FileArray := []
+					Loop, Parse, FilesToSet, `n, `r
+					{
+						If (Length := StrLen(A_LoopField))
+							FileArray.Push({Path: A_LoopField, Len: Length + 1})
+						TotalLength += Length
+					}
+					FileCount := FileArray.Length()
+					If !(FileCount && TotalLength)
+						Return False
+					; -------------------------------------------------------------------------------------------------------------------
+					; Add files to the clipboard
+					If DllCall("OpenClipboard", "Ptr", A_ScriptHwnd) && DllCall("EmptyClipboard") {
+						; HDROP format ---------------------------------------------------------------------------------------------------
+						; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
+						hDrop := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 20 + (TotalLength + FileCount + 1) * TCS, "UPtr")
+						pDrop := DllCall("GlobalLock", "Ptr" , hDrop)
+						Offset := 20
+						NumPut(Offset, pDrop + 0, "UInt")         ; DROPFILES.pFiles = offset of file list
+						NumPut(!!A_IsUnicode, pDrop + 16, "UInt") ; DROPFILES.fWide = 0 --> ANSI, fWide = 1 --> Unicode
+						For Each, File In FileArray
+							Offset += StrPut(File.Path, pDrop + Offset, File.Len) * TCS
+						DllCall("GlobalUnlock", "Ptr", hDrop)
+						DllCall("SetClipboardData","UInt", 0x0F, "UPtr", hDrop) ; 0x0F = CF_HDROP
+						; Preferred DropEffect format ------------------------------------------------------------------------------------
+						If (DropEffect := DropEffects[DropEffect]) {
+							; Write Preferred DropEffect structure to clipboard to switch between copy/cut operations
+							; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
+							hMem := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 4, "UPtr")
+							pMem := DllCall("GlobalLock", "Ptr", hMem)
+							NumPut(DropEffect, pMem + 0, "UChar")
+							DllCall("GlobalUnlock", "Ptr", hMem)
+							DllCall("SetClipboardData", "UInt", PreferredDropEffect, "Ptr", hMem)
+						}
+						DllCall("CloseClipboard")
+						Return True
+					}
+					Return False
+				} 
+                SplashTextOn,210,40,, Recording Finshed 
+		        Sleep 1000 
+                SplashTextOff           
+            }
+        else 
+            {
+                recstartv := !recstartv
+                recpausev := 0
+                SendInput, ^+{Space}
+                SplashTextOn,210,40,, Recording Started 
+		        Sleep 1000
+                SplashTextOff
+            }
+	}
+else if (KeyPressCount > 1)
+    {
+        If (recstartv = 1 AND recpausev = 1)
+            {
+                SendInput, ^{Space}
+                recpausev := 0
+                SplashTextOn,210,40,,Recording Continue
+                Sleep 1000
+                SplashTextOff
+            }
+        else If (recstartv = 1 AND recpausev = 0)
+            {
+                SendInput, ^{Space}
+                recpausev := 1
+                SplashTextOn,210,40,,Recording Pause
+                Sleep 1000
+                SplashTextOff
+            }
+        else If (recstartv = 0)
+            {
+                SplashTextOn,250,40,,Recording Not Started
+                Sleep 1000
+                SplashTextOff
+            }
+        else 
+            {
+                SplashTextOn,250,40,,Recording Not Started
+                Sleep 1000
+                SplashTextOff
+            }
+    }
+KeyPressCount := 0
+SetTimer, xKeyPressMonitor, Off
+Tooltip,
+return
+;/////////////////////////////////////////////////////////////////////////////////////////////////;Backward, Forward, PlayPause
 
 backwardbysec: ;numpad4, numpadleft, f1 :backward
 if (mdastate=0)
@@ -799,6 +864,9 @@ fnkeysdisable: ;means fnkeys are disable
 	SoundBeep, 900, 500
 	Menu, fnkeystate, check, Disable
 	Menu, fnkeystate, uncheck, Enable
+	SplashTextOn,300,40,,Fn AHK Keys Disable
+	Sleep 800
+	SplashTextOff
 	gosub, iconchanger
 }
 Return
@@ -809,6 +877,37 @@ fnkeysenable: ;mean fnkeys are enable
 	SoundBeep, 900, 500
 	Menu, fnkeystate, uncheck, Disable
 	Menu, fnkeystate, check, Enable
+	SplashTextOn,300,40,,Fn AHK Keys Enable
+	Sleep 800
+	SplashTextOff
+	gosub, iconchanger
+
+}
+Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
+
+numpadkeysdisable: ;means fnkeys are disable 
+{
+	numpadkeytoggle:=1
+	SoundBeep, 700, 800
+	Menu, numpadkeystate, check, Disable
+	Menu, numpadkeystate, uncheck, Enable
+	SplashTextOn,300,40,,Numpad AHK Keys Disable
+	Sleep 800
+	SplashTextOff
+	gosub, iconchanger
+}
+Return
+	
+numpadkeysenable: ;mean fnkeys are enable
+{
+	numpadkeytoggle:=0
+	SoundBeep, 700, 800
+	Menu, numpadkeystate, uncheck, Disable
+	Menu, numpadkeystate, check, Enable
+	SplashTextOn,300,40,,Numpad AHK Keys Enable
+	Sleep 800
+	SplashTextOff
 	gosub, iconchanger
 
 }
@@ -1010,6 +1109,36 @@ iconchanger:
         }
 }
 Return
+
+fnnumpadahkkeystate:
+If (KeyPressCount = 1)
+{
+	fnstate:=!fnstate
+	if (fnstate = 1)
+		{
+			gosub, fnkeysenable
+		}
+	else if (fnstate = 0)
+		{
+			gosub, fnkeysdisable
+		}
+}
+Else If (KeyPressCount > 1)
+{
+	numpadkeytoggle=!numpadkeytoggle
+	if (numpadkeytoggle=0)
+		{
+			gosub, numpadkeysenable
+		}
+		else if (numpadkeytoggle=1)
+		{
+			gosub, numpadkeysdisable
+		}
+}
+KeyPressCount := 0
+SetTimer, fnnumpadahkkeystate, Off
+Tooltip,
+return
 
 editwithvscode()
 {
@@ -4605,65 +4734,6 @@ if (KeyPressCount <3)
 	}
 SetTimer, xKeyPressMonitor, 500
 return
-xKeyPressMonitor:
-If (KeyPressCount = 1)
-	{
-		If (recstartv = 1)
-            {
-                recstartv := !recstartv
-                recpausev := 0
-                SendInput, ^+{Space}
-                gosub, audiofilecopy
-                SplashTextOn,210,40,, Recording Finshed 
-		        Sleep 1000 
-                SplashTextOff           
-            }
-        else 
-            {
-                recstartv := !recstartv
-                recpausev := 0
-                SendInput, ^+{Space}
-                SplashTextOn,210,40,, Recording Started 
-		        Sleep 1000
-                SplashTextOff
-            }
-	}
-else if (KeyPressCount > 1)
-    {
-        If (recstartv = 1 AND recpausev = 1)
-            {
-                SendInput, ^{Space}
-                recpausev := 0
-                SplashTextOn,210,40,,Recording Continue
-                Sleep 1000
-                SplashTextOff
-            }
-        else If (recstartv = 1 AND recpausev = 0)
-            {
-                SendInput, ^{Space}
-                recpausev := 1
-                SplashTextOn,210,40,,Recording Pause
-                Sleep 1000
-                SplashTextOff
-            }
-        else If (recstartv = 0)
-            {
-                SplashTextOn,250,40,,Recording Not Started
-                Sleep 1000
-                SplashTextOff
-            }
-        else 
-            {
-                SplashTextOn,250,40,,Recording Not Started
-                Sleep 1000
-                SplashTextOff
-            }
-    }
-KeyPressCount := 0
-SetTimer, xKeyPressMonitor, Off
-Tooltip,
-return
-
 
 ;Volume Down
 Numpad2::Volume_Down
@@ -5133,3 +5203,25 @@ else
 	SplashTextOff
 	}
 return
+
+;============================================================================================================
+;Ultimate state changer on pause | break key press
+;============================================================================================================
+
+Pause:: 
+If (KeyPressCount > 0)
+	{
+		KeyPressCount +=1
+	}
+else
+	{
+		KeyPressCount :=1
+	}
+if (KeyPressCount <3)
+	{
+		Tooltip, %KeyPressCount% `n1. Fn AHK Key State `n2. Numpad AHK Key State 
+	}
+SetTimer, fnnumpadahkkeystate, 500
+return
+
+;============================================================================================================
