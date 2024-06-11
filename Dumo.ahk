@@ -881,7 +881,6 @@ fnkeysenable: ;mean fnkeys are enable
 	Sleep 800
 	SplashTextOff
 	gosub, iconchanger
-
 }
 Return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -909,7 +908,6 @@ numpadkeysenable: ;mean fnkeys are enable
 	Sleep 800
 	SplashTextOff
 	gosub, iconchanger
-
 }
 Return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1091,21 +1089,38 @@ Return
 
 iconchanger:
 {
-	if(mdastate = 0 AND fnstate = 0) ;media player 4 all, fn key disable
+	if(mdastate = 0 and fnstate = 0 and numpadkeytoggle = 0) ;media player 4 all, fn key disable
         {
 			Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fndisableone_all.ico
         }
-    else if(mdastate = 0 AND fnstate = 1) ;media player 4 all, fn key enable
+    else if(mdastate = 0 and fnstate = 1 and numpadkeytoggle = 0) ;media player 4 all, fn key enable
         {
 			Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fnenableone_all.ico
         }
-    else if(mdastate = 1 AND fnstate = 0) ;media player 4 bluestack, fn key disable
+    else if(mdastate = 1 and fnstate = 0 and numpadkeytoggle = 0) ;media player 4 bluestack, fn key disable
         {
             Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fndisableone_nox.ico
         }
-    else if(mdastate = 1 AND fnstate = 1) ;media player 4 bluestack, fn key enable
+    else if(mdastate = 1 and fnstate = 1 and numpadkeytoggle = 0) ;media player 4 bluestack, fn key enable
         {
             Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fnenableone_nox.ico
+        }
+	;-----------------------------------------------------------------------------------------------------;when numpad ahk keys are disable
+	else if(mdastate = 0 and fnstate = 0 and numpadkeytoggle = 1) ;media player 4 all, fn key disable
+        {
+			Menu, Tray, Icon, %A_ScriptDir%\bin\icons\numdisable_fndisableone_all.ico
+        }
+    else if(mdastate = 0 and fnstate = 1 and numpadkeytoggle = 1) ;media player 4 all, fn key enable
+        {
+			Menu, Tray, Icon, %A_ScriptDir%\bin\icons\numdisable_fnenableone_all.ico
+        }
+    else if(mdastate = 1 and fnstate = 0 and numpadkeytoggle = 1) ;media player 4 bluestack, fn key disable
+        {
+            Menu, Tray, Icon, %A_ScriptDir%\bin\icons\numdisable_fndisableone_nox.ico
+        }
+    else if(mdastate = 1 and fnstate = 1 and numpadkeytoggle = 1) ;media player 4 bluestack, fn key enable
+        {
+            Menu, Tray, Icon, %A_ScriptDir%\bin\icons\numdisable_fnenableone_nox.ico
         }
 }
 Return
