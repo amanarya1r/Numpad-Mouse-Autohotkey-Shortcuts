@@ -1068,6 +1068,7 @@ Return
 
 appsuspender:
 Suspend, Toggle
+SoundBeep, 500, 500
 If (A_IsSuspended)
 {
 	Menu, Tray, Icon, %A_ScriptDir%\bin\icons\suspended.ico,,1
@@ -4450,22 +4451,6 @@ Gdip_BFromARGB(ARGB)
 ; Shortcut for Numpad
 ;=====================================================================================================================
 ;Numpad ahk keys functions enable disable toggle
-NumLock::
-	numpadkeytoggle:=!numpadkeytoggle
-	SoundBeep, 700, 800
-	if (numpadkeytoggle=0)
-	{
-		SplashTextOn,300,40,,Numpad AHK Keys Enable
-		Sleep 800
-		SplashTextOff
-	}
-	else if (numpadkeytoggle=1)
-	{
-		SplashTextOn,300,40,,Numpad AHK Keys Disable
-		Sleep 800
-		SplashTextOff
-	}
-	return
 
 ;---------------------------------------------------------------------------------------------------------------------
 #IF (numpadkeytoggle=0)
@@ -4913,18 +4898,6 @@ Return
 
 ;Icon switcher based on stage of fn keys
 ;Fn Script Play/Pause
-F12::
-fnstate:=!fnstate
-if (fnstate = 1)
-	{
-		gosub, fnkeysenable
-	}
-else if (fnstate = 0)
-	{
-		gosub, fnkeysdisable
-	}
-return
-
 ;--------------------------------------------------------------------------------------------------------------------
 #IF (fnstate=1)
 ;--------------------------------------------------------------------------------------------------------------------
@@ -5180,7 +5153,7 @@ else
 	SplashTextOff
 	}
 return
-
+/*
 ;--------------------------------------------------------------------------------------------------------------------
 #IF (numpadkeytoggle=1)
 ;--------------------------------------------------------------------------------------------------------------------
@@ -5202,7 +5175,7 @@ return
 ;--------------------------------------------------------------------------------------------------------------------
 #IF
 ;--------------------------------------------------------------------------------------------------------------------
-
+*/
 ~ScrollLock::
 sste:=GetKeyState("ScrollLock","T")
 if (sste=1)
