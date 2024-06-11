@@ -16,6 +16,7 @@ clipperchoose:=0
 screenclipstate:=10
 sharexclipstate:=00
 pstpstplnste:=0
+numpadkeytoggle:=0
 ;======================================================================================
 ;the above script is tweaked and you can only copy to clipboard on scroll up and autocopy to clipbaord function is disabled
 ;to change it just change value of clip from 0 to 1 and also comment the line 679 ;this line is of function checkahkguisclip()
@@ -502,6 +503,130 @@ mbclickmonitor4left:
     ClickCount := 0
     SetTimer, mbclickmonitor4left, Off
     Tooltip,
+return
+
+audiofilecopy:
+ ; Retrieve files in a certain directory sorted by modification date:
+ FileList :=  "" ; Initialize to be blank
+ ; Create a list of those files consisting of the time the file was modified and the file path separated by tab
+ Loop, C:\Users\amana\Music\Lecture Recordings\*.mp3*
+	 FileList .= A_LoopFileTimeModified . "`t" . A_LoopFileLongPath . "`n"
+ Sort, FileList, R  ;   ; Sort by time modified in reverse order
+ Loop, Parse, FileList, `n
+	 {
+		 If (A_LoopField = "") ; omit the last linefeed (blank item) at the end of the list.
+			 Continue
+		 StringSplit, FileItem, A_LoopField, %A_Tab%  ; Split into two parts at the tab char
+		 ; FileItem1 is FileTimeModified und FileItem2 is FileName
+			 ClipBoardSetFiles(FileItem2)
+			 Break
+	 }
+
+ ClipboardSetFiles(FilesToSet, DropEffect := "Copy") {
+	 ; FilesToSet - list of fully qualified file pathes separated by "`n" or "`r`n"
+	 ; DropEffect - preferred drop effect, either "Copy", "Move" or "" (empty string)
+	 Static TCS := A_IsUnicode ? 2 : 1 ; size of a TCHAR
+	 Static PreferredDropEffect := DllCall("RegisterClipboardFormat", "Str", "Preferred DropEffect")
+	 Static DropEffects := {1: 1, 2: 2, Copy: 1, Move: 2}
+	 ; -------------------------------------------------------------------------------------------------------------------
+	 ; Count files and total string length
+	 TotalLength := 0
+	 FileArray := []
+	 Loop, Parse, FilesToSet, `n, `r
+	 {
+		 If (Length := StrLen(A_LoopField))
+			 FileArray.Push({Path: A_LoopField, Len: Length + 1})
+		 TotalLength += Length
+	 }
+	 FileCount := FileArray.Length()
+	 If !(FileCount && TotalLength)
+		 Return False
+	 ; -------------------------------------------------------------------------------------------------------------------
+	 ; Add files to the clipboard
+	 If DllCall("OpenClipboard", "Ptr", A_ScriptHwnd) && DllCall("EmptyClipboard") {
+		 ; HDROP format ---------------------------------------------------------------------------------------------------
+		 ; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
+		 hDrop := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 20 + (TotalLength + FileCount + 1) * TCS, "UPtr")
+		 pDrop := DllCall("GlobalLock", "Ptr" , hDrop)
+		 Offset := 20
+		 NumPut(Offset, pDrop + 0, "UInt")         ; DROPFILES.pFiles = offset of file list
+		 NumPut(!!A_IsUnicode, pDrop + 16, "UInt") ; DROPFILES.fWide = 0 --> ANSI, fWide = 1 --> Unicode
+		 For Each, File In FileArray
+			 Offset += StrPut(File.Path, pDrop + Offset, File.Len) * TCS
+		 DllCall("GlobalUnlock", "Ptr", hDrop)
+		 DllCall("SetClipboardData","UInt", 0x0F, "UPtr", hDrop) ; 0x0F = CF_HDROP
+		 ; Preferred DropEffect format ------------------------------------------------------------------------------------
+		 If (DropEffect := DropEffects[DropEffect]) {
+			 ; Write Preferred DropEffect structure to clipboard to switch between copy/cut operations
+			 ; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
+			 hMem := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 4, "UPtr")
+			 pMem := DllCall("GlobalLock", "Ptr", hMem)
+			 NumPut(DropEffect, pMem + 0, "UChar")
+			 DllCall("GlobalUnlock", "Ptr", hMem)
+			 DllCall("SetClipboardData", "UInt", PreferredDropEffect, "Ptr", hMem)
+		 }
+		 DllCall("CloseClipboard")
+		 Return True
+	 }
+	 Return False
+ } 
+ Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
+
+backwardbysec: ;numpad4, numpadleft, f1 :backward
+if (mdastate=0)
+	{
+		SendInput, ^+9
+	}
+else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
+	{
+		WinActivate, BlueStacks App Player
+		SendInput, a
+	}
+else
+	{
+		SendInput, ^+9
+	}
+return
+
+playpausepress: ;numpad 5, numpadclear, esc :play pause
+if (mdastate=0)
+	{
+		if winexist("ahk_exe ONENOTE.EXE") AND (mdkystate=1)
+			{
+			  WinActivate
+				SendInput, ^+6
+			}
+		else
+			{
+				SendInput, {Media_Play_Pause} 
+			}
+	}
+else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
+	{
+		WinActivate, BlueStacks App Player
+		SendInput, s
+	}
+else
+	{
+		SendInput, {Media_Play_Pause} 
+	}
+return
+
+forwardbysec: ;numpad6, numpadright, f2 :forward
+if (mdastate=0)
+	{
+		SendInput, ^+0
+	}
+else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
+	{
+		WinActivate, BlueStacks App Player
+		SendInput, d
+	}
+else
+	{
+		SendInput, ^+0
+	}
 return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -4180,7 +4305,27 @@ Gdip_BFromARGB(ARGB)
 ;=====================================================================================================================
 ; Shortcut for Numpad
 ;=====================================================================================================================
+;Numpad ahk keys functions enable disable toggle
+NumLock::
+	numpadkeytoggle:=!numpadkeytoggle
+	SoundBeep, 700, 800
+	if (numpadkeytoggle=0)
+	{
+		SplashTextOn,300,40,,Numpad AHK Keys Enable
+		Sleep 800
+		SplashTextOff
+	}
+	else if (numpadkeytoggle=1)
+	{
+		SplashTextOn,300,40,,Numpad AHK Keys Disable
+		Sleep 800
+		SplashTextOff
+	}
+	return
 
+;---------------------------------------------------------------------------------------------------------------------
+#IF (numpadkeytoggle=0)
+;---------------------------------------------------------------------------------------------------------------------
 ;Key Combo, Reload, and Exit Script
 Numpad3::
 NumpadPgDn::
@@ -4369,6 +4514,12 @@ else if (pstpstplnste=1)
 						ToolTip, Paste Plain(OneNote)
 						Sleep 400
 					}
+				else
+					{
+						SendInput, ^v
+                		ToolTip, Paste
+                		Sleep 400
+					}
             }
     }
 KeyPressCount := 0
@@ -4462,70 +4613,7 @@ If (KeyPressCount = 1)
                 recstartv := !recstartv
                 recpausev := 0
                 SendInput, ^+{Space}
-                ; Retrieve files in a certain directory sorted by modification date:
-                FileList :=  "" ; Initialize to be blank
-                ; Create a list of those files consisting of the time the file was modified and the file path separated by tab
-                Loop, C:\Users\amana\Music\Lecture Recordings\*.mp3*
-                    FileList .= A_LoopFileTimeModified . "`t" . A_LoopFileLongPath . "`n"
-                Sort, FileList, R  ;   ; Sort by time modified in reverse order
-                Loop, Parse, FileList, `n
-                    {
-                        If (A_LoopField = "") ; omit the last linefeed (blank item) at the end of the list.
-                            Continue
-                        StringSplit, FileItem, A_LoopField, %A_Tab%  ; Split into two parts at the tab char
-                        ; FileItem1 is FileTimeModified und FileItem2 is FileName
-                            ClipBoardSetFiles(FileItem2)
-                            Break
-                    }
-
-                ClipboardSetFiles(FilesToSet, DropEffect := "Copy") {
-                    ; FilesToSet - list of fully qualified file pathes separated by "`n" or "`r`n"
-                    ; DropEffect - preferred drop effect, either "Copy", "Move" or "" (empty string)
-                    Static TCS := A_IsUnicode ? 2 : 1 ; size of a TCHAR
-                    Static PreferredDropEffect := DllCall("RegisterClipboardFormat", "Str", "Preferred DropEffect")
-                    Static DropEffects := {1: 1, 2: 2, Copy: 1, Move: 2}
-                    ; -------------------------------------------------------------------------------------------------------------------
-                    ; Count files and total string length
-                    TotalLength := 0
-                    FileArray := []
-                    Loop, Parse, FilesToSet, `n, `r
-                    {
-                        If (Length := StrLen(A_LoopField))
-                            FileArray.Push({Path: A_LoopField, Len: Length + 1})
-                        TotalLength += Length
-                    }
-                    FileCount := FileArray.Length()
-                    If !(FileCount && TotalLength)
-                        Return False
-                    ; -------------------------------------------------------------------------------------------------------------------
-                    ; Add files to the clipboard
-                    If DllCall("OpenClipboard", "Ptr", A_ScriptHwnd) && DllCall("EmptyClipboard") {
-                        ; HDROP format ---------------------------------------------------------------------------------------------------
-                        ; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
-                        hDrop := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 20 + (TotalLength + FileCount + 1) * TCS, "UPtr")
-                        pDrop := DllCall("GlobalLock", "Ptr" , hDrop)
-                        Offset := 20
-                        NumPut(Offset, pDrop + 0, "UInt")         ; DROPFILES.pFiles = offset of file list
-                        NumPut(!!A_IsUnicode, pDrop + 16, "UInt") ; DROPFILES.fWide = 0 --> ANSI, fWide = 1 --> Unicode
-                        For Each, File In FileArray
-                            Offset += StrPut(File.Path, pDrop + Offset, File.Len) * TCS
-                        DllCall("GlobalUnlock", "Ptr", hDrop)
-                        DllCall("SetClipboardData","UInt", 0x0F, "UPtr", hDrop) ; 0x0F = CF_HDROP
-                        ; Preferred DropEffect format ------------------------------------------------------------------------------------
-                        If (DropEffect := DropEffects[DropEffect]) {
-                            ; Write Preferred DropEffect structure to clipboard to switch between copy/cut operations
-                            ; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
-                            hMem := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 4, "UPtr")
-                            pMem := DllCall("GlobalLock", "Ptr", hMem)
-                            NumPut(DropEffect, pMem + 0, "UChar")
-                            DllCall("GlobalUnlock", "Ptr", hMem)
-                            DllCall("SetClipboardData", "UInt", PreferredDropEffect, "Ptr", hMem)
-                        }
-                        DllCall("CloseClipboard")
-                        Return True
-                    }
-                    Return False
-                } 
+                gosub, audiofilecopy
                 SplashTextOn,210,40,, Recording Finshed 
 		        Sleep 1000 
                 SplashTextOff           
@@ -4581,62 +4669,23 @@ return
 Numpad2::Volume_Down
 NumpadDown::Volume_Down
 
-#IF (mdastate=0)
 ;Backward by 5sec
-Numpad4::^+9
-NumpadLeft::^+9
+Numpad4::
+NumpadLeft::
+gosub, backwardbysec
+return
 
 ;Play/Pause 
 Numpad5::
 NumpadClear::
-if winexist("ahk_exe ONENOTE.EXE") AND (mdkystate=1)
-	{
-	  WinActivate
-		SendInput, ^+6
-	}
-else
-	{
-		SendInput, {Media_Play_Pause} 
-	}
+gosub, playpausepress
 return	
 
 ;Forward by 5sec
-Numpad6::^+0
-NumpadRight::^+0
-#IF
-
-
-#IF (mdastate=1)
-;backward for BlueStacks
-NumpadLeft::
-Numpad4::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, a
-	}
-return	
-
-;forward for BlueStacks
-NumpadRight::
 Numpad6::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, d
-	}
-return	
-
-;BlueStacks media play pause
-Numpad5::
-NumpadClear::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, s
-	}
-return	
-#IF
+NumpadRight::
+gosub, forwardbysec
+return
 
 ;Undo and Redo
 Numpad1::
@@ -4758,6 +4807,7 @@ return
 NumpadDel::
 NumpadDot::
 Suspend, Toggle
+SoundBeep, 500, 500
 If (A_IsSuspended)
 {
 	Menu, Tray, Icon, %A_ScriptDir%\bin\icons\suspended.ico,,1
@@ -4767,8 +4817,10 @@ Else
 	gosub, iconchanger
 }
 Return
-SoundBeep, 500, 500
-return
+;--------------------------------------------------------------------------------------------------------------------
+#IF
+;--------------------------------------------------------------------------------------------------------------------
+
 ;more new files 2
 ;=====================================================================================================================
 ; New Script 4 Function keys
@@ -4788,8 +4840,10 @@ else if (fnstate = 0)
 	}
 return
 
-
+;--------------------------------------------------------------------------------------------------------------------
 #IF (fnstate=1)
+;--------------------------------------------------------------------------------------------------------------------
+
 ;Key Combo, Reload, and Exit Script
 F11::
 If (KeyPressCount > 0)
@@ -4845,7 +4899,7 @@ if (KeyPressCount <4)
 				Tooltip, %KeyPressCount% `n1. Paste `n2. Paste Plain `n3. Windows Clipboard 
 			} 
 	}
-SetTimer, pastewmanager, 300
+SetTimer, pastewmanager, 500
 return
 pastewmanager:
 If (KeyPressCount = 1)
@@ -4861,14 +4915,14 @@ else if (KeyPressCount = 2)
 				ToolTip, Paste Plain(OneNote)
 				Sleep 400
 			}
-		else if (pstpstplnste=0)
+		else 
 			{
 				SendInput, ^v
 			}
 	}
 else if (KeyPressCount > 2)
 	{
-		SendInput, ^v
+		SendInput, #v
 		SplashTextOn,210,40,,Windows Clipboard
 		Sleep 500
 		SplashTextOff
@@ -5003,59 +5057,24 @@ SetTimer, spclonunfykm, Off
 Tooltip,
 return
 
-#IF (fnstate=1 AND mdastate=0)
 ;Backward by 5sec
-F1::^+9
+F1::
+gosub, backwardbysec
+return
 
 ;Play/Pause 
 Escape::
-if winexist("ahk_exe ONENOTE.EXE") AND (mdkystate=1)
-	{
-	  WinActivate
-		SendInput, ^+6
-	}
-else
-	{
-		SendInput, {Media_Play_Pause} 
-	}
-return	
+gosub, playpausepress
+return
 
 ;Forward by 5sec
-F2::^+0
-#IF
-
-#IF (fnstate=1 AND mdastate=1)
-;backward for Bluestack
-F1::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, a
-	}
-return	
-
-;forward for Bluestack
 F2::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, d
-	}
-return	
+gosub, forwardbysec
+return
 
-;Bluestack media play pause
-Escape::
-if winexist("ahk_exe HD-Player.exe") 
-	{
-	  WinActivate, BlueStacks App Player
-		SendInput, s
-	}
-return	
+;--------------------------------------------------------------------------------------------------------------------
 #IF
-
-
-#IF
-
+;--------------------------------------------------------------------------------------------------------------------
 ;============================================================================================================
 ;Capslock || Numlock || Scrollock indicators
 ;============================================================================================================
@@ -5076,7 +5095,10 @@ else
 	SplashTextOff
 	}
 return
-/*
+
+;--------------------------------------------------------------------------------------------------------------------
+#IF (numpadkeytoggle=1)
+;--------------------------------------------------------------------------------------------------------------------
 ~NumLock::
 nste:=GetKeyState("NumLock","T")
 if (nste=1)
@@ -5092,7 +5114,10 @@ else
 	SplashTextOff
 	}
 return
-*/
+;--------------------------------------------------------------------------------------------------------------------
+#IF
+;--------------------------------------------------------------------------------------------------------------------
+
 ~ScrollLock::
 sste:=GetKeyState("ScrollLock","T")
 if (sste=1)
