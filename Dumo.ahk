@@ -5,17 +5,17 @@
 ;bluestackmode:=0
 mdastate:= 0
 fnstate:= 0
-scrstate:=0
+scrstate:=1 ;previous value 0
 spustate:=0
 cpcstate:=0
 mdkystate:=0
 mbtnstate:=0
 whelscrlfn:=0
-xbuttonstate:=0
+xbuttonstate:=1 ;previous value 1
 clipperchoose:=0
 screenclipstate:=10
 sharexclipstate:=00
-pstpstplnste:=0
+pstpstplnste:=1 ;previous value 1
 numpadkeytoggle:=0
 ;======================================================================================
 ;the above script is tweaked and you can only copy to clipboard on scroll up and autocopy to clipbaord function is disabled
@@ -25,7 +25,7 @@ numpadkeytoggle:=0
 ;submenu for the menu and tray menu
 Menu, sharexshotstate, Add, ScrnShot - 1 || ReptShot - 2, Screenshot1orScreenshot2State1
 Menu, sharexshotstate, Add, ScrnShot - 2 || ReptShot - 1, Screenshot1orScreenshot2State0
-Menu, sharexshotstate, check, ScrnShot - 2 || ReptShot - 1
+Menu, sharexshotstate, check, ScrnShot - 1 || ReptShot - 2
 ;---------------------------------------------------------------------------------------
 Menu, speedunrestate, Add, SpeedUp || SpeedDown, SpeedUpDownor_State
 Menu, speedunrestate, Add, Redo || Undo, UndoRedo_State
@@ -37,7 +37,7 @@ Menu, copycutstate, check, Copy || Cut
 ;---------------------------------------------------------------------------------------; paste, plain paste 4 onenote
 Menu, pastestate, Add, Paste, pasteon1press 
 Menu, pastestate, Add, 1. Paste || 2. Paste Plain OneNote, pasteon1presspasteplain2press
-Menu, pastestate, check, Paste 
+Menu, pastestate, check, 1. Paste || 2. Paste Plain OneNote
 ;---------------------------------------------------------------------------------------
 Menu, playpausestate, Add, Play Pause 4 All, MediaPlay4AllorMediaPlay4NoxState0
 Menu, playpausestate, Add, Play Pause 4 BlueStacks, MediaPlay4AllorMediaPlay4NoxState1
@@ -65,7 +65,7 @@ Menu, mousemdlbtnstate, check, Disable
 ;----------------------------------------------------------------------------------------;Mouse extra button state changer
 Menu, mousextrbtnstate, Add, XBttn1 - LeftArrow || XBttn2 - RightArrow, xtrbttnlrarw
 Menu, mousextrbtnstate, Add, XBttn1 - WheelRight || XBttn2 - WheelLeft, xtrbttnwrwl
-Menu, mousextrbtnstate, check, XBttn1 - LeftArrow || XBttn2 - RightArrow
+Menu, mousextrbtnstate, check, XBttn1 - WheelRight || XBttn2 - WheelLeft
 ;----------------------------------------------------------------------------------------;Screen clipper tool selecter
 Menu, clippingtoolselect, Add, AHK Screen Clipper, ahkscrnclipselect
 Menu, clippingtoolselect, Add, Sharex Screen Clipper, sharexscrnclipselect
@@ -289,6 +289,7 @@ return
 #InstallMouseHook
 
 ~WheelUp::checkahkguisclip()
+~WheelDown::checkahkguisclipnocr() ;tesseract ocr
 
 #IF 
 ;00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -348,6 +349,7 @@ MButton::
 
 ; Monitor for middle mouse button click
 ~WheelUp::checkahkguisclip()
+~WheelDown::checkahkguisclipnocr()
 
 #IF
 ;00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -454,6 +456,7 @@ MButton::
     Click, Middle
     return
 
+#IF
 ;00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
 ;Mouse wheel function wheelup=right_arrow  wheeldown=left
@@ -1218,7 +1221,7 @@ return
 Del:: winclose, A ;contributed by tervon
 Backspace:: winclose, A
 
-checkahkguisclip()
+checkahkguisclip()   ;function: if gui active than only copy and close the gui otherwise just do nothing
 {
     ; Get the handle of the window under the mouse cursor
     MouseGetPos,,, hWnd
@@ -1240,10 +1243,11 @@ checkahkguisclip()
 				WinClose, ahk_pid %activePID%
             }
         }
+	Return
 }
-Return
+;Return
 
-checkahkguisclipclosernmedia()
+checkahkguisclipclosernmedia() ;it minimize the gui other wise plays the media
 {
     ; Get the handle of the window under the mouse cursor
     MouseGetPos,,, hWnd
@@ -1269,10 +1273,11 @@ checkahkguisclipclosernmedia()
 		{
 			SendInput {Media_Play_Pause}
 		}
+	Return
 }
-Return
+;Return ;you need not to put return in the ind of function
 
-checkahkguisclipcloser()
+checkahkguisclipcloser() ;on double click it closes the gui
 {
     ; Get the handle of the window under the mouse cursor
     MouseGetPos,,, hWnd
@@ -1293,8 +1298,35 @@ checkahkguisclipcloser()
 				WinClose, ahk_pid %activePID%
             }
         }
+	Return
 }
-Return
+;Return
+
+checkahkguisclipnocr() ;function: if ahk gui active than only use teseract ocr otherwise just ignore
+{
+    ; Get the handle of the window under the mouse cursor
+    MouseGetPos,,, hWnd
+    ; Get the class name of the window under the mouse cursor
+    WinGetClass, className, ahk_id %hWnd%
+    ; Get the process name of the window under the mouse cursor
+    WinGet, processName, ProcessName, ahk_id %hWnd%
+    ; Get the process ID of the window under the mouse cursor
+    WinGet, windowPID, PID, ahk_id %hWnd%
+    
+    ; Check if the class name, process name, and process ID match the target window
+    if (className = "AutoHotkeyGUI" and processName = "AutoHotkeyU32.exe")
+        {
+            ; Get the handle of the active window
+            WinGet, activePID, PID, A
+            ; Check if the active window and the window under the cursor are the same
+            if (activePID = windowPID) {
+				tessocront()
+				;WinClose, ahk_pid %activePID%
+            }
+        }
+	return
+}
+;Return
 
 #IfWinActive
 
