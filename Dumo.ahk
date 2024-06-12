@@ -1187,6 +1187,10 @@ y::
 GK_Win2OCR()  
 return
 
+t:: 
+tessocront()
+return 
+
 Left::
 WinGetPos, Pos_X, Pos_Y, , , A
 Pos_X -= 30
@@ -1335,7 +1339,7 @@ if (A_ThisMenuItemPos = 5)
  return
 }
 
-if (A_ThisMenuItemPos = 6) ;Carefull change the number over here
+if (A_ThisMenuItemPos = 6) ;Carefully change the number over here
 {
   SCW_Win2File(0, 0, 1)
 }
@@ -1349,6 +1353,23 @@ Return
 
 
 ; SCW Functions ==========================================================================
+tessocront()
+{
+	SCW_Win2Clipboard2() ; 0 for border in this function, leave empty for no border
+	pToken := Gdip_Startup()
+	j++
+	Tesseract%j%:=new Tesseract()
+	pBitmap := Gdip_CreateBitmapFromClipboard() ;store pointer to image from clipboard
+	text:=Tesseract%j%.OCR(pBitmap) ;process image
+	Tesseract%j%:=""
+	Gdip_Shutdown(pToken)
+	ToolTip, % Clipboard:=Text
+	Sleep 2000
+	ToolTip
+	;WinClose, A
+	;~ Reload ;not required if j++ is present
+	return
+}
 
 SCW_Version() {
    return 1.02
