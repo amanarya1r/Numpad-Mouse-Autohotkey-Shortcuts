@@ -4956,7 +4956,7 @@ Return
 ;--------------------------------------------------------------------------------------------------------------------
 
 ;Key Combo, Reload, and Exit Script
-F11::
+F12::
 If (KeyPressCount > 0)
 	{
 		KeyPressCount +=1
@@ -4973,7 +4973,7 @@ SetTimer, cKeyPressMonitor, 1000
 Return
 
 ;Sharex Screenshot
-F5::
+F6::
 If (KeyPressCount > 0)
 	{
 		KeyPressCount +=1
@@ -4990,7 +4990,7 @@ SetTimer, oKeyPressMonitor, 300
 return
 
 ;Paste and clibpoard
-F6::
+F7::
 If (KeyPressCount > 0)
 	{
 		KeyPressCount +=1
@@ -5044,7 +5044,7 @@ Tooltip,
 return
 
 ;Copy, Cut and Copy Link to Paragraph
-F7::
+F8::
 If (KeyPressCount > 0)
 	{
 		KeyPressCount +=1
@@ -5061,7 +5061,7 @@ SetTimer, vKeyPressMonitor, 550
 return
 
 ;Recording audio of the lectures for onenote
-F8::
+F9::
 If (KeyPressCount > 0)
 	{
 		KeyPressCount +=1
@@ -5077,8 +5077,8 @@ if (KeyPressCount <4)
 SetTimer, xKeyPressMonitor, 500
 return
 
-;Volume Down
-F3::
+;Speed slow and undo
+F4::
 if (spustate = 0)
     {
         SendInput, ^+7
@@ -5090,7 +5090,7 @@ else if (spustate = 1)
 return
 
 ;Speed fast and Redo
-F4::
+F5::
 if (spustate = 0)
     {
         SendInput, ^+8
@@ -5102,7 +5102,7 @@ else if (spustate = 1)
 return
 
 ;Aimp Pause/Play
-F9::
+F10::
 If (KeyPressCount > 0)
 	{
 		KeyPressCount +=1
@@ -5119,7 +5119,7 @@ SetTimer, bKeyPressMonitor, 300
 return
 
 ;Special Functions Key
-F10::
+F11::
 If (KeyPressCount > 0)
 	{
 		KeyPressCount +=1
@@ -5168,18 +5168,18 @@ SetTimer, spclonunfykm, Off
 Tooltip,
 return
 
-;Backward by 5sec
-F1::
-gosub, backwardbysec
-return
-
 ;Play/Pause 
-Escape::
+F1::
 gosub, playpausepress
 return
 
-;Forward by 5sec
+;Backward by 5sec
 F2::
+gosub, backwardbysec
+return
+
+;Forward by 5sec
+F3::
 gosub, forwardbysec
 return
 
