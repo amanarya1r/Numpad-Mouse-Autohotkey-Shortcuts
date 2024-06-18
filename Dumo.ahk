@@ -591,17 +591,25 @@ If (KeyPressCount = 1)
 					Return False
 				} 
                 SplashTextOn,210,40,, Recording Finshed 
-		        Sleep 1000 
-                SplashTextOff           
+		        ;audiotext := "`n Recording Finished `n "
+				audiotext := "Recording Finished"
+				Sleep 1000 
+                SplashTextOff  
+				SetTimer, FollowMouse, Off
+				ToolTip        
             }
         else 
             {
                 recstartv := !recstartv
                 recpausev := 0
                 SendInput, ^+{Space}
-                SplashTextOn,210,40,, Recording Started 
+				SplashTextOn,210,40,, Recording Started 
 		        Sleep 1000
                 SplashTextOff
+				;ToolTip, % "`n Recording `n "
+				;audiotext := "`n Recording `n "
+				audiotext := "Recording"
+				SetTimer, FollowMouse, 10
             }
 	}
 else if (KeyPressCount > 1)
@@ -613,6 +621,9 @@ else if (KeyPressCount > 1)
                 SplashTextOn,210,40,,Recording Continue
                 Sleep 1000
                 SplashTextOff
+				;audiotext := "`n Recording Continue `n "
+				audiotext := "Recording Continue"
+				;SetTimer, FollowMouse, 10
             }
         else If (recstartv = 1 AND recpausev = 0)
             {
@@ -621,23 +632,38 @@ else if (KeyPressCount > 1)
                 SplashTextOn,210,40,,Recording Pause
                 Sleep 1000
                 SplashTextOff
+				;audiotext := "`n Recording Pause `n "
+				audiotext := "Recording Pause"
+				;SetTimer, FollowMouse, 10
             }
         else If (recstartv = 0)
             {
-                SplashTextOn,250,40,,Recording Not Started
+                ToolTip 
+				SplashTextOn,250,40,,Recording Not Started
+                ;ToolTip, % "`n Recording Not Started `n "
+				ToolTip,    Recording Not Started
                 Sleep 1000
+				ToolTip
                 SplashTextOff
             }
         else 
             {
                 SplashTextOn,250,40,,Recording Not Started
+				;ToolTip, % "`n Recording Not Started `n "
+				ToolTip,    Recording Not Started
                 Sleep 1000
+				ToolTip
                 SplashTextOff
             }
     }
 KeyPressCount := 0
 SetTimer, xKeyPressMonitor, Off
-Tooltip,
+;Tooltip,
+return
+
+FollowMouse:
+    MouseGetPos, x, y
+    ToolTip, % audiotext, x+20, y+20
 return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////;Backward, Forward, PlayPause
 
