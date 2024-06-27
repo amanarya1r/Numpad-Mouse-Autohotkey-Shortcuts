@@ -17,12 +17,17 @@ screenclipstate:=10
 sharexclipstate:=00
 pstpstplnste:=1 ;previous value 1
 numpadkeytoggle:=0
+ChoosePlayer:=00 ;default
 ;======================================================================================
 ;the above script is tweaked and you can only copy to clipboard on scroll up and autocopy to clipbaord function is disabled
 ;to change it just change value of clip from 0 to 1 and also comment the line 679 ;this line is of function checkahkguisclip()
 ;to discard the image delete it by physical keyboard or right click menu
 ;======================================================================================
 ;submenu for the menu and tray menu
+Menu, mediakey4allchoose, Add, Media_Key (default), mk4acDefault
+Menu, mediakey4allchoose, Add, Media_Key (PotPlayer), mk4acPotPlayer
+Menu, mediakey4allchoose, check, Media_Key (default)
+;---------------------------------------------------------------------------------------
 Menu, sharexshotstate, Add, ScrnShot - 1 || ReptShot - 2, Screenshot1orScreenshot2State1
 Menu, sharexshotstate, Add, ScrnShot - 2 || ReptShot - 1, Screenshot1orScreenshot2State0
 Menu, sharexshotstate, check, ScrnShot - 1 || ReptShot - 2
@@ -38,12 +43,12 @@ Menu, copycutstate, check, Copy || Cut
 Menu, pastestate, Add, Paste, pasteon1press 
 Menu, pastestate, Add, 1. Paste || 2. Paste Plain OneNote, pasteon1presspasteplain2press
 Menu, pastestate, check, 1. Paste || 2. Paste Plain OneNote
-;---------------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------; media player for bluestack or otherwise
 Menu, playpausestate, Add, Play Pause 4 All, MediaPlay4AllorMediaPlay4NoxState0
 Menu, playpausestate, Add, Play Pause 4 BlueStacks, MediaPlay4AllorMediaPlay4NoxState1
 Menu, playpausestate, check, Play Pause 4 All
-;---------------------------------------------------------------------------------------
-Menu, mkeyonestate, Add, Media_Key 4 All, mediakey4allchoose
+;---------------------------------------------------------------------------------------; media key for onenote or all other application
+Menu, mkeyonestate, Add, Media_Key 4 All, :mediakey4allchoose
 Menu, mkeyonestate, Add, Media_Key 4 OneNote, mediakey4onenotechoose
 Menu, mkeyonestate, check, Media_Key 4 All
 ;---------------------------------------------------------------------------------------;fn ahk key state
@@ -668,9 +673,13 @@ return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////;Backward, Forward, PlayPause
 
 backwardbysec: ;numpad4, numpadleft, f1 :backward
-if (mdastate=0)
+if (mdastate=0 and ChoosePlayer=00)
 	{
 		SendInput, ^+9
+	}
+else if (mdastate=0 and ChoosePlayer=10)
+	{
+		SendInput, ^!9
 	}
 else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
 	{
@@ -691,6 +700,10 @@ if (mdastate=0)
 			  WinActivate
 				SendInput, ^+6
 			}
+		else if (ChoosePlayer=10)
+			{
+				SendInput, ^!6
+			}
 		else
 			{
 				SendInput, {Media_Play_Pause} 
@@ -708,9 +721,13 @@ else
 return
 
 forwardbysec: ;numpad6, numpadright, f2 :forward
-if (mdastate=0)
+if (mdastate=0 and ChoosePlayer=00)
 	{
 		SendInput, ^+0
+	}
+else if (mdastate=0 and ChoosePlayer=10)
+	{
+		SendInput, ^!0
 	}
 else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
 	{
@@ -861,18 +878,39 @@ Bluestackflscmxmmd:
 Return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////
 
-mediakey4allchoose:
+mk4acDefault: 
 {
 	mdkystate:=0
-	Menu, mkeyonestate, check, Media_Key 4 All
+	ChoosePlayer:=00
+    Menu, mediakey4allchoose, check, Media_Key (default)
+    Menu, mediakey4allchoose, uncheck, Media_Key (PotPlayer)
+    ;checking and unchecking mkeyonestate
+    Menu, mkeyonestate, check, Media_Key 4 All
 	Menu, mkeyonestate, uncheck, Media_Key 4 OneNote
 	MsgBox, 262144, Media_Play_Pause,
 	(
-		Play/Pause - Play/Pause 4 All
+		Play/Pause - Media_Play_Pause
+        `nMediaKey -4- Default 
 	) 
-		
-}
-Return
+} 
+return
+
+mk4acPotPlayer:
+{
+	mdkystate:=0
+	ChoosePlayer:=10
+    Menu, mediakey4allchoose, uncheck, Media_Key (default)
+    Menu, mediakey4allchoose, check, Media_Key (PotPlayer)
+    ;checking and unchecking mkeyonestate
+    Menu, mkeyonestate, check, Media_Key 4 All
+	Menu, mkeyonestate, uncheck, Media_Key 4 OneNote
+	MsgBox, 262144, Media_Play_Pause,
+	(
+		Play/Pause - Media_Play_Pause
+        `nMediaKey -4- PotPlayer
+	) 
+} 
+return
 
 mediakey4onenotechoose:
 {
@@ -4621,7 +4659,14 @@ else if (KeyPressCount = 5)
 			mdkystate := !mdkystate
 			if (mdkystate=0)
 				{
-					gosub, mediakey4allchoose
+					if(ChoosePlayer=00)
+						{
+							gosub, mk4acDefault
+						}
+					else
+						{
+							gosub, mk4acPotPlayer
+						}
 				}
 			else if (mdkystate=1)
 				{
