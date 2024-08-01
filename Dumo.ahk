@@ -11,7 +11,7 @@ cpcstate:=0
 mdkystate:=0
 mbtnstate:=0
 whelscrlfn:=0
-xbuttonstate:=1 ;previous value 1
+xbuttonstate:=10 ;previous value 11
 clipperchoose:=0
 screenclipstate:=10
 sharexclipstate:=00
@@ -69,8 +69,11 @@ Menu, mousemdlbtnstate, Add, Disable, mousemdlbtnstateenable
 Menu, mousemdlbtnstate, check, Disable
 ;----------------------------------------------------------------------------------------;Mouse extra button state changer
 Menu, mousextrbtnstate, Add, XBttn1 - LeftArrow || XBttn2 - RightArrow, xtrbttnlrarw
+Menu, mousextrbtnstate, Add
+Menu, mousextrbtnstate, Add, XBttn1 - BackWard5s || XBttn2 - Forward5s, xtrbttnfb5s
+Menu, mousextrbtnstate, Add
 Menu, mousextrbtnstate, Add, XBttn1 - WheelRight || XBttn2 - WheelLeft, xtrbttnwrwl
-Menu, mousextrbtnstate, check, XBttn1 - WheelRight || XBttn2 - WheelLeft
+Menu, mousextrbtnstate, check, XBttn1 - BackWard5s || XBttn2 - Forward5s
 ;----------------------------------------------------------------------------------------;Screen clipper tool selecter
 Menu, clippingtoolselect, Add, AHK Screen Clipper, ahkscrnclipselect
 Menu, clippingtoolselect, Add, Sharex Screen Clipper, sharexscrnclipselect
@@ -473,17 +476,29 @@ MButton::
 #IF
 
 ;Mouse extra buttons function depending on xbuttonstate
-#IF (xbuttonstate = 1)
+#IF (xbuttonstate = 11) ;wheel right and left for horizontal scroll
 {
 	XButton1::WheelRight
 	XButton2::WheelLeft
 }
 #IF
 
-#IF (xbuttonstate = 0)
+#IF (xbuttonstate = 01) ;left and right arrow key in vim and bash editing
 {
 	XButton1::Left
 	XButton2::Right
+}
+#IF
+
+#IF (xbuttonstate = 10) ;backward and forward for mediaplayer specially for lectures
+{
+	XButton1::
+	gosub, backwardbysec
+	return
+
+	XButton2::Right
+	gosub, forwardbysec
+	return
 }
 #IF
 ;============================================================================================================
@@ -634,11 +649,11 @@ else if (KeyPressCount > 1)
             {
                 SendInput, ^{Space}
                 recpausev := 1
-                SplashTextOn,210,40,,Recording Pause
+                SplashTextOn,210,40,,Recording Paused
                 Sleep 1000
                 SplashTextOff
 				;audiotext := "`n Recording Pause `n "
-				audiotext := "Recording Pause"
+				audiotext := "Recording Paused"
 				;SetTimer, FollowMouse, 10
             }
         else If (recstartv = 0)
@@ -1021,16 +1036,27 @@ Return
 
 xtrbttnlrarw:
 {
-    xbuttonstate:=0
+    xbuttonstate:=01
 	Menu, mousextrbtnstate, check, XBttn1 - LeftArrow || XBttn2 - RightArrow
+	Menu, mousextrbtnstate, uncheck, XBttn1 - BackWard5s || XBttn2 - Forward5s
+	Menu, mousextrbtnstate, uncheck, XBttn1 - WheelRight || XBttn2 - WheelLeft
+}
+Return
+
+xtrbttnfb5s:
+{
+    xbuttonstate:=10
+	Menu, mousextrbtnstate, uncheck, XBttn1 - LeftArrow || XBttn2 - RightArrow
+	Menu, mousextrbtnstate, check, XBttn1 - BackWard5s || XBttn2 - Forward5s
 	Menu, mousextrbtnstate, uncheck, XBttn1 - WheelRight || XBttn2 - WheelLeft
 }
 Return
 
 xtrbttnwrwl:
 {
-	xbuttonstate:=1
+	xbuttonstate:=11
 	Menu, mousextrbtnstate, uncheck, XBttn1 - LeftArrow || XBttn2 - RightArrow
+	Menu, mousextrbtnstate, uncheck, XBttn1 - BackWard5s || XBttn2 - Forward5s
 	Menu, mousextrbtnstate, check, XBttn1 - WheelRight || XBttn2 - WheelLeft
 }
 Return
@@ -4805,7 +4831,7 @@ if (cpcstate = 0)
                 ToolTip, Copy
                 Sleep 400
             }
-        else if (KeyPressCount = 2)
+        else if (KeyPressCount > 1)
             {
                 SendInput, ^x
                 ToolTip, Cut
@@ -4931,14 +4957,14 @@ return
 bKeyPressMonitor:
 If (KeyPressCount = 1)
 	{
-		SendInput, ^-
+		SendInput, ^!-
 		ToolTip, Aimp Play/Pause
 		Sleep 400
 	}
 else if (KeyPressCount > 1)
 	{
-		SendInput, ^!0
-		ToolTip, Aimp Player
+		SendInput, ^!=
+		ToolTip, AIMP Player
 		Sleep 400
 	}
 KeyPressCount := 0
