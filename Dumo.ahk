@@ -15,7 +15,7 @@ xbuttonstate:=10 ;previous value 11
 clipperchoose:=0
 screenclipstate:=10
 sharexclipstate:=00
-pstpstplnste:=1 ;previous value 1
+pstpstplnste:=0 ;previous value 1
 numpadkeytoggle:=0
 ChoosePlayer:=00 ;default
 ;======================================================================================
@@ -42,7 +42,7 @@ Menu, copycutstate, check, Copy || Cut
 ;---------------------------------------------------------------------------------------; paste, plain paste 4 onenote
 Menu, pastestate, Add, Paste, pasteon1press 
 Menu, pastestate, Add, 1. Paste || 2. Paste Plain OneNote, pasteon1presspasteplain2press
-Menu, pastestate, check, 1. Paste || 2. Paste Plain OneNote
+Menu, pastestate, check, Paste
 ;---------------------------------------------------------------------------------------; media player for bluestack or otherwise
 Menu, playpausestate, Add, Play Pause 4 All, MediaPlay4AllorMediaPlay4NoxState0
 Menu, playpausestate, Add, Play Pause 4 BlueStacks, MediaPlay4AllorMediaPlay4NoxState1
@@ -352,7 +352,7 @@ MButton::
         Tooltip, %ClickCount%
     SetTimer, mbclickmonitor4left, 300
     ; Send the middle mouse button click
-    Click, Middle
+    ; Click, Middle
     return
 
 ; Monitor for middle mouse button click
@@ -686,6 +686,15 @@ FollowMouse:
     ToolTip, % audiotext, x+20, y+20
 return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////;Backward, Forward, PlayPause
+
+;---------------------------------------------------------
+;special keys for vertical and horizontal scroll
+;---------------------------------------------------------
+^+!0::WheelRight
+return
+^+!9::WheelLeft
+return
+;---------------------------------------------------------
 
 backwardbysec: ;numpad4, numpadleft, f1 :backward
 if (mdastate=0 and ChoosePlayer=00)
