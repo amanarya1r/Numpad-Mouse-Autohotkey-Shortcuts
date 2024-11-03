@@ -4,7 +4,7 @@
 ;#ErrorStdOut Error_logs.txt  ; Redirect errors to a log file named "error_log.txt"
 ;bluestackmode:=0
 mdastate:= 0
-fnstate:= 0
+fnstate:= 1
 scrstate:=1 ;previous value 0
 spustate:=0
 cpcstate:=0
@@ -26,6 +26,7 @@ ChoosePlayer:=00 ;default
 ;submenu for the menu and tray menu
 Menu, mediakey4allchoose, Add, Media_Key (default), mk4acDefault
 Menu, mediakey4allchoose, Add, Media_Key (PotPlayer), mk4acPotPlayer
+Menu, mediakey4allchoose, Add, Media_Key (Opera), mk4acOpera
 Menu, mediakey4allchoose, check, Media_Key (default)
 ;---------------------------------------------------------------------------------------
 Menu, sharexshotstate, Add, ScrnShot - 1 || ReptShot - 2, Screenshot1orScreenshot2State1
@@ -54,7 +55,7 @@ Menu, mkeyonestate, check, Media_Key 4 All
 ;---------------------------------------------------------------------------------------;fn ahk key state
 Menu, fnkeystate, Add, Enable, fnkeysenable
 Menu, fnkeystate, Add, Disable, fnkeysdisable
-Menu, fnkeystate, check, Disable
+Menu, fnkeystate, check, Enable
 ;---------------------------------------------------------------------------------------;Numpad ahk key state
 Menu, numpadkeystate, Add, Enable, numpadkeysenable
 Menu, numpadkeystate, Add, Disable, numpadkeysdisable
@@ -92,7 +93,7 @@ Menu, sharexbtnselector, check, Sharex_ScrnClip - RButton
 ;Menu, Tray icons, menu and texts
 Menu, Tray, NoStandard ;Pause reload and supsend will be removed 
 Menu, Tray, Tip, Dumo - All Rounder
-Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fndisableone_all.ico
+Menu, Tray, Icon, %A_ScriptDir%\bin\icons\fnenableone_all.ico
 Menu, Tray, Add, Screenshot State, :sharexshotstate
 Menu, Tray, Add, SpeedUpDown_UnRe State, :speedunrestate
 Menu, Tray, Add
@@ -496,7 +497,7 @@ MButton::
 	gosub, backwardbysec
 	return
 
-	XButton2::Right
+	XButton2::
 	gosub, forwardbysec
 	return
 }
@@ -508,7 +509,35 @@ MButton::
 mbclickmonitor:
     If (ClickCount = 1) 
 		{
-        	SendInput {Media_Play_Pause}
+        	;SendInput {Media_Play_Pause}
+			;if winexist("ahk_exe ONENOTE.EXE") AND (mdkystate=1)
+			if (mdastate=0) and (mdkystate=1)
+				{
+					;WinActivate
+					SendInput, ^+6
+				}
+			else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=10)
+				{
+					SendInput, ^!6
+				}
+			else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=11)
+				{
+					SendInput, !+6
+				}
+			else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=00)
+				{
+					SendInput, {Media_Play_Pause} 
+				}
+			else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
+				{
+					WinActivate, BlueStacks App Player
+					SendInput, s
+				}
+			else
+				{
+					SendInput, {Media_Play_Pause} 
+				}
+			return
     	} 
 	else if (ClickCount > 1) 
 		{
@@ -536,6 +565,36 @@ mbclickmonitor4left:
     ClickCount := 0
     SetTimer, mbclickmonitor4left, Off
     Tooltip,
+return
+
+mbclickplaypressmonitor4left:
+;if winexist("ahk_exe ONENOTE.EXE") AND (mdkystate=1)
+if (mdastate=0) and (mdkystate=1)
+	{
+		;WinActivate
+		SendInput, ^+6
+	}
+else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=10)
+	{
+		SendInput, ^!6
+	}
+else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=11)
+	{
+		SendInput, !+6
+	}
+else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=00)
+	{
+		SendInput, {Media_Play_Pause} 
+	}
+else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
+	{
+		WinActivate, BlueStacks App Player
+		SendInput, s
+	}
+else
+	{
+		SendInput, {Media_Play_Pause} 
+	}
 return
 
 xKeyPressMonitor:
@@ -705,6 +764,10 @@ else if (mdastate=0 and ChoosePlayer=10)
 	{
 		SendInput, ^!9
 	}
+else if (mdastate=0 and ChoosePlayer=11)
+	{
+		SendInput, !+1
+	}
 else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
 	{
 		WinActivate, BlueStacks App Player
@@ -716,22 +779,25 @@ else
 	}
 return
 
-playpausepress: ;numpad 5, numpadclear, esc :play pause
-if (mdastate=0)
+playpausepress: ;numpad 5, numpadclear, f1 :play pause
+;SendInput {Media_Play_Pause}
+;if winexist("ahk_exe ONENOTE.EXE") AND (mdkystate=1)
+if (mdastate=0) and (mdkystate=1)
 	{
-		if winexist("ahk_exe ONENOTE.EXE") AND (mdkystate=1)
-			{
-			  WinActivate
-				SendInput, ^+6
-			}
-		else if (ChoosePlayer=10)
-			{
-				SendInput, ^!6
-			}
-		else
-			{
-				SendInput, {Media_Play_Pause} 
-			}
+		;WinActivate
+		SendInput, ^+6
+	}
+else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=10)
+	{
+		SendInput, ^!6
+	}
+else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=11)
+	{
+		SendInput, !+6
+	}
+else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=00)
+	{
+		SendInput, {Media_Play_Pause} 
 	}
 else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
 	{
@@ -743,6 +809,37 @@ else
 		SendInput, {Media_Play_Pause} 
 	}
 return
+; if (mdastate=0)
+; 	{
+; 		;if winexist("ahk_exe ONENOTE.EXE") AND (mdkystate=1)
+; 		if(mdkystate=1)
+; 			{
+; 			  ;WinActivate
+; 				SendInput, ^+6
+; 			}
+; 		else if (ChoosePlayer=10)
+; 			{
+; 				SendInput, ^!6
+; 			}
+; 		else if (ChoosePlayer=11)
+; 			{
+; 				SendInput, !+6
+; 			}
+; 		else
+; 			{
+; 				SendInput, {Media_Play_Pause} 
+; 			}
+; 	}
+; else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
+; 	{
+; 		WinActivate, BlueStacks App Player
+; 		SendInput, s
+; 	}
+; else
+; 	{
+; 		SendInput, {Media_Play_Pause} 
+; 	}
+; return
 
 forwardbysec: ;numpad6, numpadright, f2 :forward
 if (mdastate=0 and ChoosePlayer=00)
@@ -752,6 +849,10 @@ if (mdastate=0 and ChoosePlayer=00)
 else if (mdastate=0 and ChoosePlayer=10)
 	{
 		SendInput, ^!0
+	}
+else if (mdastate=0 and ChoosePlayer=11)
+	{
+		SendInput, !+2
 	}
 else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
 	{
@@ -908,6 +1009,7 @@ mk4acDefault:
 	ChoosePlayer:=00
     Menu, mediakey4allchoose, check, Media_Key (default)
     Menu, mediakey4allchoose, uncheck, Media_Key (PotPlayer)
+	Menu, mediakey4allchoose, uncheck, Media_Key (Opera)
     ;checking and unchecking mkeyonestate
     Menu, mkeyonestate, check, Media_Key 4 All
 	Menu, mkeyonestate, uncheck, Media_Key 4 OneNote
@@ -925,6 +1027,7 @@ mk4acPotPlayer:
 	ChoosePlayer:=10
     Menu, mediakey4allchoose, uncheck, Media_Key (default)
     Menu, mediakey4allchoose, check, Media_Key (PotPlayer)
+	Menu, mediakey4allchoose, uncheck, Media_Key (Opera)
     ;checking and unchecking mkeyonestate
     Menu, mkeyonestate, check, Media_Key 4 All
 	Menu, mkeyonestate, uncheck, Media_Key 4 OneNote
@@ -935,6 +1038,24 @@ mk4acPotPlayer:
 	) 
 } 
 return
+
+mk4acOpera:
+{
+	mdkystate:= 0
+	ChoosePlayer:=11
+	Menu, mediakey4allchoose, uncheck, Media_Key (default)
+    Menu, mediakey4allchoose, uncheck, Media_Key (PotPlayer)
+	Menu, mediakey4allchoose, check, Media_Key (Opera)
+	;checking and unchecking mkeyonestate
+    Menu, mkeyonestate, check, Media_Key 4 All
+	Menu, mkeyonestate, uncheck, Media_Key 4 OneNote
+	MsgBox, 262144, Media_Play_Pause,
+	(
+		Play/Pause - Media_Play_Pause
+        `nMediaKey -4- Opera
+	) 
+}
+Return
 
 mediakey4onenotechoose:
 {
@@ -1370,7 +1491,7 @@ checkahkguisclipclosernmedia() ;it minimize the gui other wise plays the media
         }
 	else
 		{
-			SendInput {Media_Play_Pause}
+			gosub, mbclickplaypressmonitor4left
 		}
 	Return
 }
@@ -4920,9 +5041,14 @@ return
 Numpad1::
 NumpadEnd::
 if (spustate = 0)
-    {
-        SendInput, ^+7
-    }
+	if (ChoosePlayer=11)
+		{
+			SendInput, !+3
+		}
+		else
+		{
+			SendInput, ^+7
+		}
 else if (spustate = 1)
     {
         SendInput, ^z
@@ -4932,9 +5058,14 @@ return
 Numpad7::
 NumpadHome::
 if (spustate = 0)
-    {
-        SendInput, ^+8
-    }
+	if (ChoosePlayer=11)
+		{
+			SendInput, !+4
+		}
+		else
+		{
+			SendInput, ^+8
+		}
 else if (spustate = 1)
     {
         SendInput, ^y
@@ -5187,7 +5318,14 @@ return
 F4::
 if (spustate = 0)
     {
-        SendInput, ^+7
+        if (ChoosePlayer=11)
+		{
+			SendInput, !+3
+		}
+		else
+		{
+			SendInput, ^+7
+		}
     }
 else if (spustate = 1)
     {
@@ -5198,9 +5336,14 @@ return
 ;Speed fast and Redo
 F5::
 if (spustate = 0)
-    {
-        SendInput, ^+8
-    }
+	if (ChoosePlayer=11)
+		{
+			SendInput, !+4
+		}
+		else
+		{
+			SendInput, ^+8
+		}
 else if (spustate = 1)
     {
         SendInput, ^y
