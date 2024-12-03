@@ -5041,14 +5041,20 @@ return
 Numpad1::
 NumpadEnd::
 if (spustate = 0)
-	if (ChoosePlayer=11)
-		{
-			SendInput, !+3
-		}
+	{
+		if (ChoosePlayer=11)
+			{
+				SendInput, !+3
+			}
+		else if (ChoosePlayer=10)
+			{
+				SendInput, ^!7
+			}
 		else
-		{
-			SendInput, ^+7
-		}
+			{
+				SendInput, ^+7
+			}
+	}
 else if (spustate = 1)
     {
         SendInput, ^z
@@ -5058,14 +5064,20 @@ return
 Numpad7::
 NumpadHome::
 if (spustate = 0)
-	if (ChoosePlayer=11)
-		{
-			SendInput, !+4
-		}
+	{
+		if (ChoosePlayer=11)
+			{
+				SendInput, !+4
+			}
+		else if (ChoosePlayer=10)
+			{
+				SendInput, ^!8
+			}
 		else
-		{
-			SendInput, ^+8
-		}
+			{
+				SendInput, ^+8
+			}
+	}
 else if (spustate = 1)
     {
         SendInput, ^y
@@ -5319,13 +5331,17 @@ F4::
 if (spustate = 0)
     {
         if (ChoosePlayer=11)
-		{
-			SendInput, !+3
-		}
+			{
+				SendInput, !+3
+			}
+		else if (ChoosePlayer=10)
+			{
+				SendInput, ^!7
+			}
 		else
-		{
-			SendInput, ^+7
-		}
+			{
+				SendInput, ^+7
+			}
     }
 else if (spustate = 1)
     {
@@ -5336,14 +5352,20 @@ return
 ;Speed fast and Redo
 F5::
 if (spustate = 0)
-	if (ChoosePlayer=11)
-		{
-			SendInput, !+4
-		}
+	{
+		if (ChoosePlayer=11)
+			{
+				SendInput, !+4
+			}
+		else if (ChoosePlayer=10)
+			{
+				SendInput, ^!8
+			}
 		else
-		{
-			SendInput, ^+8
-		}
+			{
+				SendInput, ^+8
+			}
+	}
 else if (spustate = 1)
     {
         SendInput, ^y
