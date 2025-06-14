@@ -1,0 +1,9 @@
+# Text normalisation 
+*.txt text=auto eol=lf
+
+# Image(binary) difference
+*.png diff=useexif
+*.jpg diff=useexif
+*.webp diff=useexif
+*.jpeg diff=useexif
+

@@ -5195,7 +5195,7 @@ Return
 
 ;more new files 2
 ;=====================================================================================================================
-; New Script 4 Function keys
+; Function keys
 ;=====================================================================================================================
 
 ;Icon switcher based on stage of fn keys
@@ -5536,4 +5536,71 @@ if (KeyPressCount <3)
 SetTimer, fnnumpadahkkeystate, 500
 return
 
-;============================================================================================================
+;=====================================================================================================================
+; Keyboard keys
+;=====================================================================================================================
+
+` & j::
+    if GetKeyState("Shift", "P")
+        Send, +{Left}
+	else if GetKeyState("Ctrl", "P")
+		Send, ^{Left}
+	else if GetKeyState("Alt", "P")
+		Send, !{Left}
+	else if GetKeyState("Esc", "P")
+		Send, #{Left}
+    else
+        Send, {Left}
+return
+
+` & i::
+    if GetKeyState("Shift", "P")
+        Send, +{Up}
+	else if GetKeyState("Ctrl", "P")
+		Send, ^{Up}
+	else if GetKeyState("Alt", "P")
+		Send, !{Up}
+	else if GetKeyState("Esc", "P")
+		Send, #{Up}
+    else
+        Send, {Up}
+return
+
+` & k::
+    if GetKeyState("Shift", "P")
+        Send, +{Down}
+	else if GetKeyState("Ctrl", "P")
+		Send, ^{Down}
+	else if GetKeyState("Alt", "P")
+		Send, !{Down}
+	else if GetKeyState("Esc", "P")
+		Send, #{Down}	
+    else				
+        Send, {Down}
+return	
+
+` & l::
+    if GetKeyState("Shift", "P")
+        Send, +{Right}
+	else if GetKeyState("Ctrl", "P")
+		Send, ^{Right}
+	else if GetKeyState("Alt", "P")
+		Send, !{Right}	
+	else if GetKeyState("Esc", "P")
+		Send, #{Right}
+    else
+        Send, {Right}
+return
+
++`::send {~}
+
+`::  
+    KeyWait, ``  ; Wait for release of the ` key
+    if (A_PriorHotkey = "`")
+        return  ; It was part of a combo
+    else
+        Send, ``  ; Send backtick
+return
+
+
+

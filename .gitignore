@@ -1,0 +1,42 @@
+# ==============================
+# Executables 
+# ==============================
+*.exe
+
+# ==============================
+# Ignore build directories
+# ==============================
+build-*/
+debug/
+release/
+Debug/
+Release/
+x64/
+x86/
+ARM/
+out/
+build/
+tempCodeRunnerFile*
+**/tempCodeRunnerFile*
+
+# ==============================
+# Ignore generated documentation
+# ==============================
+doc/
+
+# ==============================
+# Ignore other temporary and backup files
+# ==============================
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+.DS_Store
+Thumbs.db
+*.ini
+
+# ==============================
+# Ignore Visual Studio Code workspace settings
+# ==============================
+.vscode/
