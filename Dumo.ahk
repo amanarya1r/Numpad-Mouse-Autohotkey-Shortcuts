@@ -5541,15 +5541,15 @@ return
 ;=====================================================================================================================
 
 ` & j::
-    if GetKeyState("Shift", "P")
+    if GetKeyState("Shift", "P") ; shift + left
         Send, +{Left}
-	else if GetKeyState("Ctrl", "P")
-		Send, ^{Left}
-	else if GetKeyState("Alt", "P")
+	else if GetKeyState("Ctrl", "P") ; ctrl + left
+		Send, ^{Left} 
+	else if GetKeyState("Alt", "P") ; alt + left 
 		Send, !{Left}
-	else if GetKeyState("Esc", "P")
+	else if GetKeyState("Esc", "P") ; win + left
 		Send, #{Left}
-    else
+    else ; left
         Send, {Left}
 return
 
@@ -5592,15 +5592,44 @@ return
         Send, {Right}
 return
 
-+`::send {~}
++`::send {~} ; shift + ` = ~
 
-`::  
-    KeyWait, ``  ; Wait for release of the ` key
-    if (A_PriorHotkey = "`")
-        return  ; It was part of a combo
-    else
-        Send, ``  ; Send backtick
-return
+`::`
 
+; sc029::
+;     while GetKeyState("sc029", "P")  ; Use scan code for backtick (works even though ` is special)
+;     {
+;         Send, ``
+;         Sleep, 10  ; Repeat speed
+;     }
+; return
 
+    ; if ((A_PriorHotkey = "`") && (heldTime < 400)){
+    ;     return  ; It was part of a combo
+	; }
 
+; {
+; 	    start := A_TickCount
+
+;     ; Wait until 400ms passed or key released
+;     Loop
+;     {
+;         if (!GetKeyState("sc029", "P"))
+;             break
+
+;         heldTime := A_TickCount - start
+;         if (heldTime > 400)
+;         {
+;             ; Now start sending `p` repeatedly while still held
+;             while GetKeyState("sc029", "P")
+;             {
+;                 Send, ``
+;                 Sleep, 10
+;             }
+;             return
+;         }
+;         Sleep, 10
+;     }
+
+;     ; If released before 400ms, send one `p`
+; }
