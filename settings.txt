@@ -1,0 +1,16 @@
+mdastate=0
+fnstate=1
+scrstate=1
+spustate=0
+cpcstate=0
+mdkystate=0
+mbtnstate=0
+whelscrlfn=0
+xbuttonstate=10
+clipperchoose=0
+screenclipstate=10
+sharexclipstate=00
+pstpstplnste=0
+numpadkeytoggle=0
+ChoosePlayer=00
+tklmode=01

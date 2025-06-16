@@ -1,23 +1,60 @@
 #SingleInstance, Force
 #NoEnv
 #Persistent
-;#ErrorStdOut Error_logs.txt  ; Redirect errors to a log file named "error_log.txt"
-;bluestackmode:=0
-mdastate:= 0
-fnstate:= 1
-scrstate:=1 ;previous value 0
-spustate:=0
-cpcstate:=0
-mdkystate:=0
-mbtnstate:=0
-whelscrlfn:=0
-xbuttonstate:=10 ;previous value 11
-clipperchoose:=0
-screenclipstate:=10
-sharexclipstate:=00
-pstpstplnste:=0 ;previous value 1
-numpadkeytoggle:=0
-ChoosePlayer:=00 ;default
+SetWorkingDir %A_ScriptDir%
+
+; Path to your settings file
+settingsFile := "settings.txt"
+; ----------------------------
+; Functions to manage settings
+; ----------------------------
+
+loadSettings(file) {
+    global
+    if !FileExist(file) {
+        MsgBox, 16, Error, Settings file not found: %file%
+        ExitApp
+    }
+
+    Loop, Read, %file%
+    {
+        line := A_LoopReadLine
+        if line contains =
+        {
+            key := Trim(StrSplit(line, "=")[1])
+            val := Trim(StrSplit(line, "=")[2])
+            %key% := val
+        }
+    }
+}
+
+saveSetting(key, val, file) {
+    newContent := ""
+    found := false
+
+    Loop, Read, %file%
+    {
+        thisLine := A_LoopReadLine
+        if (InStr(thisLine, key . "=") = 1) {
+            newContent .= key . "=" . val . "`n"
+            found := true
+        } else {
+            newContent .= thisLine . "`n"
+        }
+    }
+
+    ; If key was not found, append it
+    if (!found) {
+        newContent .= key . "=" . val . "`n"
+    }
+
+    FileDelete, %file%
+    FileAppend, %newContent%, %file%
+}
+
+; Load all settings into memory
+loadSettings(settingsFile)
+
 ;======================================================================================
 ;the above script is tweaked and you can only copy to clipboard on scroll up and autocopy to clipbaord function is disabled
 ;to change it just change value of clip from 0 to 1 and also comment the line 679 ;this line is of function checkahkguisclip()
@@ -27,66 +64,172 @@ ChoosePlayer:=00 ;default
 Menu, mediakey4allchoose, Add, Media_Key (default), mk4acDefault
 Menu, mediakey4allchoose, Add, Media_Key (PotPlayer), mk4acPotPlayer
 Menu, mediakey4allchoose, Add, Media_Key (Opera), mk4acOpera
-Menu, mediakey4allchoose, check, Media_Key (default)
+if ((mdkystate == 0) && (ChoosePlayer == 00)){
+	Menu, mediakey4allchoose, check, Media_Key (default)
+    Menu, mediakey4allchoose, uncheck, Media_Key (PotPlayer)
+	Menu, mediakey4allchoose, uncheck, Media_Key (Opera)
+} else if ((mdkystate == 0) && (ChoosePlayer == 10)){
+	Menu, mediakey4allchoose, uncheck, Media_Key (default)
+    Menu, mediakey4allchoose, check, Media_Key (PotPlayer)
+	Menu, mediakey4allchoose, uncheck, Media_Key (Opera)
+} else if ((mdkystate == 0) && (ChoosePlayer == 11)){
+	Menu, mediakey4allchoose, uncheck, Media_Key (default)
+    Menu, mediakey4allchoose, uncheck, Media_Key (PotPlayer)
+	Menu, mediakey4allchoose, check, Media_Key (Opera)
+}
 ;---------------------------------------------------------------------------------------
 Menu, sharexshotstate, Add, ScrnShot - 1 || ReptShot - 2, Screenshot1orScreenshot2State1
 Menu, sharexshotstate, Add, ScrnShot - 2 || ReptShot - 1, Screenshot1orScreenshot2State0
-Menu, sharexshotstate, check, ScrnShot - 1 || ReptShot - 2
+if (scrstate == 0){
+	Menu, sharexshotstate, uncheck, ScrnShot - 1 || ReptShot - 2
+	Menu, sharexshotstate, check, ScrnShot - 2 || ReptShot - 1
+} else if(scrstate == 1) {
+	Menu, sharexshotstate, check, ScrnShot - 1 || ReptShot - 2
+	Menu, sharexshotstate, uncheck, ScrnShot - 2 || ReptShot - 1
+}
 ;---------------------------------------------------------------------------------------
 Menu, speedunrestate, Add, SpeedUp || SpeedDown, SpeedUpDownor_State
 Menu, speedunrestate, Add, Redo || Undo, UndoRedo_State
-Menu, speedunrestate, check, SpeedUp || SpeedDown
+if (spustate == 0){
+	Menu, speedunrestate, check, SpeedUp || SpeedDown
+	Menu, speedunrestate, uncheck, Redo || Undo
+} else if (spustate == 1) {
+	Menu, speedunrestate, uncheck, SpeedUp || SpeedDown
+	Menu, speedunrestate, check, Redo || Undo
+}
 ;---------------------------------------------------------------------------------------; copycut, copylinkcopycut 4 onenote
 Menu, copycutstate, Add, Copy || Cut, copycutchoose
 Menu, copycutstate, Add, CopyLinkOneNote || Copy || Cut, copylinkcopycutchoose
-Menu, copycutstate, check, Copy || Cut
+if (cpcstate == 0){
+	Menu, copycutstate, check, Copy || Cut
+	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
+} else if (cpcstate == 1) {
+	Menu, copycutstate, uncheck, Copy || Cut
+	Menu, copycutstate, check, CopyLinkOneNote || Copy || Cut
+}
 ;---------------------------------------------------------------------------------------; paste, plain paste 4 onenote
 Menu, pastestate, Add, Paste, pasteon1press 
 Menu, pastestate, Add, 1. Paste || 2. Paste Plain OneNote, pasteon1presspasteplain2press
-Menu, pastestate, check, Paste
+if (pstpstplnste == 0){
+	Menu, pastestate, check, Paste
+	Menu, pastestate, uncheck, 1. Paste || 2. Paste Plain OneNote
+} else if (pstpstplnste == 1){
+	Menu, pastestate, uncheck, Paste
+	Menu, pastestate, check, 1. Paste || 2. Paste Plain OneNote
+}
 ;---------------------------------------------------------------------------------------; media player for bluestack or otherwise
 Menu, playpausestate, Add, Play Pause 4 All, MediaPlay4AllorMediaPlay4NoxState0
 Menu, playpausestate, Add, Play Pause 4 BlueStacks, MediaPlay4AllorMediaPlay4NoxState1
-Menu, playpausestate, check, Play Pause 4 All
+if (mdastate == 0){
+	Menu, playpausestate, check, Play Pause 4 All
+	Menu, playpausestate, uncheck, Play Pause 4 BlueStacks
+} else if (mdastate == 1){
+	Menu, playpausestate, uncheck, Play Pause 4 All
+	Menu, playpausestate, check, Play Pause 4 BlueStacks
+}
 ;---------------------------------------------------------------------------------------; media key for onenote or all other application
 Menu, mkeyonestate, Add, Media_Key 4 All, :mediakey4allchoose
 Menu, mkeyonestate, Add, Media_Key 4 OneNote, mediakey4onenotechoose
-Menu, mkeyonestate, check, Media_Key 4 All
+if (mdkystate == 1){
+	Menu, mkeyonestate, uncheck, Media_Key 4 All
+	Menu, mkeyonestate, check, Media_Key 4 OneNote
+} else if (mdkystate == 0){
+	Menu, mkeyonestate, check, Media_Key 4 All
+	Menu, mkeyonestate, uncheck, Media_Key 4 OneNote
+}
 ;---------------------------------------------------------------------------------------;fn ahk key state
 Menu, fnkeystate, Add, Enable, fnkeysenable
 Menu, fnkeystate, Add, Disable, fnkeysdisable
-Menu, fnkeystate, check, Enable
+if (fnstate == 0){
+	Menu, fnkeystate, check, Disable
+	Menu, fnkeystate, uncheck, Enable
+} else if (fnstate == 1){
+	Menu, fnkeystate, uncheck, Disable
+	Menu, fnkeystate, check, Enable
+}
 ;---------------------------------------------------------------------------------------;Numpad ahk key state
 Menu, numpadkeystate, Add, Enable, numpadkeysenable
 Menu, numpadkeystate, Add, Disable, numpadkeysdisable
-Menu, numpadkeystate, check, Enable
+if (numpadkeytoggle == 1){
+	Menu, numpadkeystate, check, Disable
+	Menu, numpadkeystate, uncheck, Enable
+} else if (numpadkeytoggle == 0){
+	Menu, numpadkeystate, uncheck, Disable
+	Menu, numpadkeystate, check, Enable
+}
 ;---------------------------------------------------------------------------------------:Mouse scroll wheel state changer
 Menu, scrolledstate, Add, WheelUP - ScrollUp || WheelDown - ScrollDown, wheelscrollupdownchoose
 Menu, scrolledstate, Add, WheelUp - RightArrow || WheelDown - LeftArrow, wheelrightleftarrowchoose
-Menu, scrolledstate, check, WheelUP - ScrollUp || WheelDown - ScrollDown
+if (whelscrlfn == 0){
+	Menu, scrolledstate, check, WheelUP - ScrollUp || WheelDown - ScrollDown
+    Menu, scrolledstate, uncheck, WheelUp - RightArrow || WheelDown - LeftArrow
+} else if (whelscrlfn == 1){
+	Menu, scrolledstate, uncheck, WheelUP - ScrollUp || WheelDown - ScrollDown
+    Menu, scrolledstate, check, WheelUp - RightArrow || WheelDown - LeftArrow
+}
 ;----------------------------------------------------------------------------------------;Mouse middle button state changer
 Menu, mousemdlbtnstate, Add, Enable, mousemdlbtnstatedisable
 Menu, mousemdlbtnstate, Add, Disable, mousemdlbtnstateenable
-Menu, mousemdlbtnstate, check, Disable
+if (mbtnstate == 0){
+	Menu, mousemdlbtnstate, uncheck, Enable
+	Menu, mousemdlbtnstate, check, Disable
+} else if (mbtnstate == 1){
+	Menu, mousemdlbtnstate, check, Enable
+	Menu, mousemdlbtnstate, uncheck, Disable
+}
 ;----------------------------------------------------------------------------------------;Mouse extra button state changer
 Menu, mousextrbtnstate, Add, XBttn1 - LeftArrow || XBttn2 - RightArrow, xtrbttnlrarw
 Menu, mousextrbtnstate, Add
 Menu, mousextrbtnstate, Add, XBttn1 - BackWard5s || XBttn2 - Forward5s, xtrbttnfb5s
 Menu, mousextrbtnstate, Add
 Menu, mousextrbtnstate, Add, XBttn1 - WheelRight || XBttn2 - WheelLeft, xtrbttnwrwl
-Menu, mousextrbtnstate, check, XBttn1 - BackWard5s || XBttn2 - Forward5s
+if (xbuttonstate == 01){
+	Menu, mousextrbtnstate, check, XBttn1 - LeftArrow || XBttn2 - RightArrow
+	Menu, mousextrbtnstate, uncheck, XBttn1 - BackWard5s || XBttn2 - Forward5s
+	Menu, mousextrbtnstate, uncheck, XBttn1 - WheelRight || XBttn2 - WheelLeft
+} else if (xbuttonstate == 10){
+	Menu, mousextrbtnstate, uncheck, XBttn1 - LeftArrow || XBttn2 - RightArrow
+	Menu, mousextrbtnstate, check, XBttn1 - BackWard5s || XBttn2 - Forward5s
+	Menu, mousextrbtnstate, uncheck, XBttn1 - WheelRight || XBttn2 - WheelLeft
+} else if (xbuttonstate == 11){
+	Menu, mousextrbtnstate, uncheck, XBttn1 - LeftArrow || XBttn2 - RightArrow
+	Menu, mousextrbtnstate, uncheck, XBttn1 - BackWard5s || XBttn2 - Forward5s
+	Menu, mousextrbtnstate, check, XBttn1 - WheelRight || XBttn2 - WheelLeft
+}
 ;----------------------------------------------------------------------------------------;Screen clipper tool selecter
 Menu, clippingtoolselect, Add, AHK Screen Clipper, ahkscrnclipselect
 Menu, clippingtoolselect, Add, Sharex Screen Clipper, sharexscrnclipselect
-Menu, clippingtoolselect, check, AHK Screen Clipper
+; condition statment is int bottom of Mnfunction
 ;----------------------------------------------------------------------------------------;ahk screen clipper activating button selector
 Menu, ahkbtnselector, Add, AHK_ScrnClip - MButton, ahkscnclipmdlbtnselect
 Menu, ahkbtnselector, Add, AHK_ScrnClip - RButton, ahkscncliprghtbtnselect
-Menu, ahkbtnselector, check, AHK_ScrnClip - RButton
+if (screenclipstate == 10){
+	Menu, ahkbtnselector, uncheck, AHK_ScrnClip - MButton
+    Menu, ahkbtnselector, check, AHK_ScrnClip - RButton
+} else if (screenclipstate == 01){
+	Menu, ahkbtnselector, check, AHK_ScrnClip - MButton
+    Menu, ahkbtnselector, uncheck, AHK_ScrnClip - RButton
+}
 ;----------------------------------------------------------------------------------------;sharex screen clipper activating button selector
 Menu, sharexbtnselector, Add, Sharex_ScrnClip - MButton, sharexclipmdlbtnselect
 Menu, sharexbtnselector, Add, Sharex_ScrnClip - RButton, sharexcliprghtbtnselect
-Menu, sharexbtnselector, check, Sharex_ScrnClip - RButton
+if (sharexclipstate == 00){
+	Menu, sharexbtnselector, uncheck, Sharex_ScrnClip - MButton
+    Menu, sharexbtnselector, check, Sharex_ScrnClip - RButton
+} else if (sharexclipstate == 11){
+	Menu, sharexbtnselector, check, Sharex_ScrnClip - MButton
+    Menu, sharexbtnselector, uncheck, Sharex_ScrnClip - RButton
+}
+;----------------------------------------------------------------------------------------;tkl keyboard special keyboard function on or off
+Menu, tklksfmodeselector, Add, ON, tklksfmodeon
+Menu, tklksfmodeselector, Add, OFF, tklksfmodeoff
+if (tklmode == 01){
+	Menu, tklksfmodeselector, check, ON
+    Menu, tklksfmodeselector, uncheck, OFF
+} else if (tklmode == 00){
+	Menu, tklksfmodeselector, uncheck, ON
+    Menu, tklksfmodeselector, check, OFF
+}
 ;----------------------------------------------------------------------------------------
 
 ;======================================================================================
@@ -122,6 +265,9 @@ Menu, Tray, Check, AHK Clip Activate Button
 Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add, Sharex Clip Activate Button, :sharexbtnselector
+Menu, Tray, Add
+Menu, Tray, Add
+Menu, Tray, Add, TKL Keyboard ijkl => ULDR, :tklksfmodeselector
 Menu, Tray, Add
 Menu, Tray, Add
 Menu, Tray, Add, Lecture Recordings, lectruerecordingopen
@@ -176,6 +322,9 @@ Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Sharex Clip Activate Button, :sharexbtnselector
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
+Menu, MNFunctions, Add, TKL Keyboard ijkl => ULDR, :tklksfmodeselector
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Lecture Recordings, lectruerecordingopen
 Menu, MNFunctions, Add, Explore E_D, exploreedopen
 Menu, MNFunctions, Add
@@ -195,6 +344,25 @@ Menu, MNFunctions, Add, Suspend App, appsuspender
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Exit App, exiterapp
+
+;----------------------------------------------------------------------------------------
+; universal clipper tool menu select function
+if (clipperchoose == 0){
+	Menu, clippingtoolselect, check, AHK Screen Clipper
+	Menu, clippingtoolselect, uncheck, Sharex Screen Clipper
+	Menu, Tray, check, AHK Clip Activate Button
+	Menu, MNFunctions, check, AHK Clip Activate Button
+	Menu, Tray, uncheck, Sharex Clip Activate Button
+	Menu, MNFunctions, uncheck, Sharex Clip Activate Button
+} else if (clipperchoose == 1){
+	Menu, clippingtoolselect, uncheck, AHK Screen Clipper
+	Menu, clippingtoolselect, check, Sharex Screen Clipper
+	Menu, Tray, uncheck, AHK Clip Activate Button
+	Menu, MNFunctions, uncheck, AHK Clip Activate Button
+	Menu, Tray, check, Sharex Clip Activate Button
+	Menu, MNFunctions, check, Sharex Clip Activate Button
+}
+;----------------------------------------------------------------------------------------
 ;=============================================================================================
 
 SetBatchLines,-1
@@ -869,6 +1037,7 @@ return
 Screenshot1orScreenshot2State0: ;create non-spaced labels for menu items
 {
 	scrstate:=0
+	saveSetting("scrstate", scrstate, settingsFile)
 	Menu, sharexshotstate, uncheck, ScrnShot - 1 || ReptShot - 2
 	Menu, sharexshotstate, check, ScrnShot - 2 || ReptShot - 1
 }
@@ -877,6 +1046,7 @@ Return
 Screenshot1orScreenshot2State1:
 {
 	scrstate:=1
+	saveSetting("scrstate", scrstate, settingsFile)
 	Menu, sharexshotstate, check, ScrnShot - 1 || ReptShot - 2
 	Menu, sharexshotstate, uncheck, ScrnShot - 2 || ReptShot - 1
 }
@@ -886,6 +1056,7 @@ Return
 SpeedUpDownor_State:
 {
 	spustate := 0
+	saveSetting("spustate", spustate, settingsFile)
 	Menu, speedunrestate, check, SpeedUp || SpeedDown
 	Menu, speedunrestate, uncheck, Redo || Undo
 	MsgBox, 262144, Speed up/down,
@@ -899,6 +1070,7 @@ Return
 UndoRedo_State:
 {
 	spustate := 1
+	saveSetting("spustate", spustate, settingsFile)
 	Menu, speedunrestate, uncheck, SpeedUp || SpeedDown
 	Menu, speedunrestate, check, Redo || Undo
 	MsgBox, 262144, undo/redo,
@@ -913,6 +1085,7 @@ Return
 copycutchoose:
 {
 	cpcstate:=0
+	saveSetting("cpcstate", cpcstate, settingsFile)
 	Menu, copycutstate, check, Copy || Cut
 	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
 	MsgBox, 262144, copy/cut,
@@ -926,6 +1099,7 @@ Return
 copylinkcopycutchoose:
 {
 	cpcstate:=1
+	saveSetting("cpcstate", cpcstate, settingsFile)
 	Menu, copycutstate, uncheck, Copy || Cut
 	Menu, copycutstate, check, CopyLinkOneNote || Copy || Cut
 	MsgBox, 262144, copylink/copy/cut,
@@ -941,6 +1115,7 @@ Return
 pasteon1press:
 {
 	pstpstplnste:=0
+	saveSetting("pstpstplnste", pstpstplnste, settingsFile)
 	Menu, pastestate, check, Paste
 	Menu, pastestate, uncheck, 1. Paste || 2. Paste Plain OneNote
 	SplashTextOn,150,40,, Paste
@@ -952,6 +1127,7 @@ Return
 pasteon1presspasteplain2press:
 {
 	pstpstplnste:=1
+	saveSetting("pstpstplnste", pstpstplnste, settingsFile)
 	Menu, pastestate, uncheck, Paste
 	Menu, pastestate, check, 1. Paste || 2. Paste Plain OneNote
 	SplashTextOn,300,50,, 1. Paste || 2. Paste Plain OneNote
@@ -964,6 +1140,7 @@ Return
 MediaPlay4AllorMediaPlay4NoxState0:
 {
 	mdastate:=0
+	saveSetting("mdastate", mdastate, settingsFile)
 	SoundBeep, 300, 700
 	Menu, playpausestate, check, Play Pause 4 All
 	Menu, playpausestate, uncheck, Play Pause 4 BlueStacks
@@ -974,6 +1151,7 @@ Return
 MediaPlay4AllorMediaPlay4NoxState1:
 {
 	mdastate:=1
+	saveSetting("mdastate", mdastate, settingsFile)
 	SoundBeep, 300, 700
 	Menu, playpausestate, uncheck, Play Pause 4 All
 	Menu, playpausestate, check, Play Pause 4 BlueStacks
@@ -985,6 +1163,7 @@ Return
 Bluestackflscmxmmd:
 {
 	bluestackmode := !bluestackmode
+	saveSetting("bluestackmode", bluestackmode, settingsFile)
 	if (bluestackmode=0)
 		{
 			MsgBox, 262144, Bluestacks Maximize,
@@ -1007,6 +1186,8 @@ mk4acDefault:
 {
 	mdkystate:=0
 	ChoosePlayer:=00
+	saveSetting("mdkystate", mdkystate, settingsFile)
+	saveSetting("ChoosePlayer", ChoosePlayer, settingsFile)
     Menu, mediakey4allchoose, check, Media_Key (default)
     Menu, mediakey4allchoose, uncheck, Media_Key (PotPlayer)
 	Menu, mediakey4allchoose, uncheck, Media_Key (Opera)
@@ -1025,6 +1206,8 @@ mk4acPotPlayer:
 {
 	mdkystate:=0
 	ChoosePlayer:=10
+	saveSetting("mdkystate", mdkystate, settingsFile)
+	saveSetting("ChoosePlayer", ChoosePlayer, settingsFile)
     Menu, mediakey4allchoose, uncheck, Media_Key (default)
     Menu, mediakey4allchoose, check, Media_Key (PotPlayer)
 	Menu, mediakey4allchoose, uncheck, Media_Key (Opera)
@@ -1043,6 +1226,8 @@ mk4acOpera:
 {
 	mdkystate:= 0
 	ChoosePlayer:=11
+	saveSetting("mdkystate", mdkystate, settingsFile)
+	saveSetting("ChoosePlayer", ChoosePlayer, settingsFile)
 	Menu, mediakey4allchoose, uncheck, Media_Key (default)
     Menu, mediakey4allchoose, uncheck, Media_Key (PotPlayer)
 	Menu, mediakey4allchoose, check, Media_Key (Opera)
@@ -1060,6 +1245,7 @@ Return
 mediakey4onenotechoose:
 {
 	mdkystate:=1
+	saveSetting("mdkystate", mdkystate, settingsFile)
 	Menu, mkeyonestate, uncheck, Media_Key 4 All
 	Menu, mkeyonestate, check, Media_Key 4 OneNote
 	MsgBox, 262144, Media_Play_Pause,
@@ -1073,6 +1259,7 @@ Return
 fnkeysdisable: ;means fnkeys are disable 
 {
 	fnstate:=0
+	saveSetting("fnstate", fnstate, settingsFile)
 	SoundBeep, 900, 500
 	Menu, fnkeystate, check, Disable
 	Menu, fnkeystate, uncheck, Enable
@@ -1086,6 +1273,7 @@ Return
 fnkeysenable: ;mean fnkeys are enable
 {
 	fnstate:=1
+	saveSetting("fnstate", fnstate, settingsFile)
 	SoundBeep, 900, 500
 	Menu, fnkeystate, uncheck, Disable
 	Menu, fnkeystate, check, Enable
@@ -1100,6 +1288,7 @@ Return
 numpadkeysdisable: ;means fnkeys are disable 
 {
 	numpadkeytoggle:=1
+	saveSetting("numpadkeytoggle", numpadkeytoggle, settingsFile)
 	SoundBeep, 700, 800
 	Menu, numpadkeystate, check, Disable
 	Menu, numpadkeystate, uncheck, Enable
@@ -1113,6 +1302,7 @@ Return
 numpadkeysenable: ;mean fnkeys are enable
 {
 	numpadkeytoggle:=0
+	saveSetting("numpadkeytoggle", numpadkeytoggle, settingsFile)
 	SoundBeep, 700, 800
 	Menu, numpadkeystate, uncheck, Disable
 	Menu, numpadkeystate, check, Enable
@@ -1127,6 +1317,7 @@ Return
 wheelscrollupdownchoose:
 {
     whelscrlfn:=0
+	saveSetting("whelscrlfn", whelscrlfn, settingsFile)
 	Menu, scrolledstate, check, WheelUP - ScrollUp || WheelDown - ScrollDown
     Menu, scrolledstate, uncheck, WheelUp - RightArrow || WheelDown - LeftArrow
 }
@@ -1135,6 +1326,7 @@ Return
 wheelrightleftarrowchoose:
 {
 	whelscrlfn:=1
+	saveSetting("whelscrlfn", whelscrlfn, settingsFile)
 	Menu, scrolledstate, uncheck, WheelUP - ScrollUp || WheelDown - ScrollDown
     Menu, scrolledstate, check, WheelUp - RightArrow || WheelDown - LeftArrow
 }
@@ -1144,6 +1336,7 @@ Return
 mousemdlbtnstateenable:
 {
     mbtnstate:=0
+	saveSetting("mbtnstate", mbtnstate, settingsFile)
 	Menu, mousemdlbtnstate, uncheck, Enable
 	Menu, mousemdlbtnstate, check, Disable
 	SplashTextOn,250,50,,Mouse_Middle_Button Disable
@@ -1155,6 +1348,7 @@ Return
 mousemdlbtnstatedisable:
 {
     mbtnstate:=1
+	saveSetting("mbtnstate", mbtnstate, settingsFile)
 	Menu, mousemdlbtnstate, check, Enable
 	Menu, mousemdlbtnstate, uncheck, Disable
 	SplashTextOn,250,50,,Mouse_Middle_Button Enable
@@ -1167,6 +1361,7 @@ Return
 xtrbttnlrarw:
 {
     xbuttonstate:=01
+	saveSetting("xbuttonstate", xbuttonstate, settingsFile)
 	Menu, mousextrbtnstate, check, XBttn1 - LeftArrow || XBttn2 - RightArrow
 	Menu, mousextrbtnstate, uncheck, XBttn1 - BackWard5s || XBttn2 - Forward5s
 	Menu, mousextrbtnstate, uncheck, XBttn1 - WheelRight || XBttn2 - WheelLeft
@@ -1176,6 +1371,7 @@ Return
 xtrbttnfb5s:
 {
     xbuttonstate:=10
+	saveSetting("xbuttonstate", xbuttonstate, settingsFile)
 	Menu, mousextrbtnstate, uncheck, XBttn1 - LeftArrow || XBttn2 - RightArrow
 	Menu, mousextrbtnstate, check, XBttn1 - BackWard5s || XBttn2 - Forward5s
 	Menu, mousextrbtnstate, uncheck, XBttn1 - WheelRight || XBttn2 - WheelLeft
@@ -1185,6 +1381,7 @@ Return
 xtrbttnwrwl:
 {
 	xbuttonstate:=11
+	saveSetting("xbuttonstate", xbuttonstate, settingsFile)
 	Menu, mousextrbtnstate, uncheck, XBttn1 - LeftArrow || XBttn2 - RightArrow
 	Menu, mousextrbtnstate, uncheck, XBttn1 - BackWard5s || XBttn2 - Forward5s
 	Menu, mousextrbtnstate, check, XBttn1 - WheelRight || XBttn2 - WheelLeft
@@ -1195,6 +1392,7 @@ Return
 ahkscrnclipselect:
 {
 	clipperchoose:=0
+	saveSetting("clipperchoose", clipperchoose, settingsFile)
 	Menu, clippingtoolselect, check, AHK Screen Clipper
 	Menu, clippingtoolselect, uncheck, Sharex Screen Clipper
 	Menu, Tray, check, AHK Clip Activate Button
@@ -1207,6 +1405,7 @@ Return
 sharexscrnclipselect:
 {
 	clipperchoose:=1
+	saveSetting("clipperchoose", clipperchoose, settingsFile)
 	Menu, clippingtoolselect, uncheck, AHK Screen Clipper
 	Menu, clippingtoolselect, check, Sharex Screen Clipper
 	Menu, Tray, uncheck, AHK Clip Activate Button
@@ -1220,6 +1419,7 @@ Return
 ahkscncliprghtbtnselect:
 {
     screenclipstate := 10
+	saveSetting("screenclipstate", screenclipstate, settingsFile)
 	Menu, ahkbtnselector, uncheck, AHK_ScrnClip - MButton
     Menu, ahkbtnselector, check, AHK_ScrnClip - RButton
 }
@@ -1228,6 +1428,7 @@ Return
 ahkscnclipmdlbtnselect:
 {
 	screenclipstate := 01
+	saveSetting("screenclipstate", screenclipstate, settingsFile)
 	Menu, ahkbtnselector, check, AHK_ScrnClip - MButton
     Menu, ahkbtnselector, uncheck, AHK_ScrnClip - RButton
 }
@@ -1237,6 +1438,7 @@ Return
 sharexcliprghtbtnselect:
 {
     sharexclipstate := 00
+	saveSetting("sharexclipstate", sharexclipstate, settingsFile)
 	Menu, sharexbtnselector, uncheck, Sharex_ScrnClip - MButton
     Menu, sharexbtnselector, check, Sharex_ScrnClip - RButton
 }
@@ -1245,8 +1447,51 @@ Return
 sharexclipmdlbtnselect:
 {
 	sharexclipstate := 11
+	saveSetting("sharexclipstate", sharexclipstate, settingsFile)
 	Menu, sharexbtnselector, check, Sharex_ScrnClip - MButton
     Menu, sharexbtnselector, uncheck, Sharex_ScrnClip - RButton
+}
+Return
+;/////////////////////////////////////////////////////////////////////////////////////////////////
+
+tklksfmodeon:
+{
+    tklmode := 01
+	saveSetting("tklmode", tklmode, settingsFile)
+	Menu, tklksfmodeselector, check, ON
+    Menu, tklksfmodeselector, uncheck, OFF
+	text =
+	(
+	=> Keyboard with bad Arrow Keys design <=
+-> Special Functionality 4 Tkl Keyboard <-
+
+	i  = Up Arrow
+	j  = Left Arrow
+	k  = Down Arrow
+	l  = Right Arrow
+
+	F1 = Shift
+	F2 = Ctrl
+	F3 = Alt
+	F4 = Win
+	)
+	MsgBox, 262144, Media_Play_Pause, %text%
+
+	}
+Return
+
+tklksfmodeoff:
+{
+	tklmode := 00
+	saveSetting("tklmode", tklmode, settingsFile)
+	Menu, tklksfmodeselector, uncheck, ON
+    Menu, tklksfmodeselector, check, OFF
+	text = 
+	(
+	=> Kyeboard with proper Arrow Keys design <=
+-> Back to Normal Keyboard Functionality <-
+	)
+	MsgBox, 262144, Media_Play_Pause, %text%
 }
 Return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1353,6 +1598,7 @@ fnnumpadahkkeystate:
 If (KeyPressCount = 1)
 {
 	fnstate:=!fnstate
+	saveSetting("fnstate", fnstate, settingsFile)	
 	if (fnstate = 1)
 		{
 			gosub, fnkeysenable
@@ -1365,6 +1611,7 @@ If (KeyPressCount = 1)
 Else If (KeyPressCount > 1)
 {
 	numpadkeytoggle:=!numpadkeytoggle
+	saveSetting("numpadkeytoggle", numpadkeytoggle, settingsFile)
 	if (numpadkeytoggle=0)
 		{
 			gosub, numpadkeysenable
@@ -5193,6 +5440,83 @@ Return
 #IF
 ;--------------------------------------------------------------------------------------------------------------------
 
+;=====================================================================================================================
+; Keyboard keys
+;=====================================================================================================================
+
+;--------------------------------------------------------------------------------------------------------------------
+#IF (tklmode=01)
+;--------------------------------------------------------------------------------------------------------------------
+; Suppress ` + F1–F4 from triggering their default behavior
+` & F1::return
+` & F2::return
+` & F3::return
+` & F4::return
+
+` & j::
+    if (GetKeyState("Shift", "P") || GetKeyState("F1", "P")) ; Shift + Left 
+        Send, +{Left}
+	else if (GetKeyState("Ctrl", "P") || GetKeyState("F2", "P")) ; Ctrl + Left
+		Send, ^{Left} 
+	else if (GetKeyState("Alt", "P") || GetKeyState("F3","P")) ; Alt + Left 
+		Send, !{Left}
+	else if GetKeyState("F4", "P") ; Win + Left
+		Send, #{Left}
+    else ; Left
+        Send, {Left}
+return
+
+` & i::
+    if (GetKeyState("Shift", "P") || GetKeyState("F1", "P")) ; Shift + Up
+        Send, +{Up}
+	else if (GetKeyState("Ctrl", "P") || GetKeyState("F2", "P")) ; Ctrl + Up
+		Send, ^{Up} 
+	else if (GetKeyState("Alt", "P") || GetKeyState("F3","P")) ; Alt + Up
+		Send, !{Up}
+	else if GetKeyState("F4", "P") ; Win + up
+		Send, #{Up}
+    else ; Up
+        Send, {Up}
+return
+
+` & k::
+    if (GetKeyState("Shift", "P") || GetKeyState("F1", "P")) ; Shift + Down
+        Send, +{Down}
+	else if (GetKeyState("Ctrl", "P") || GetKeyState("F2", "P")) ; Ctrl + Down
+		Send, ^{Down} 
+	else if (GetKeyState("Alt", "P") || GetKeyState("F3","P")) ; Alt + Down 
+		Send, !{Down}
+	else if GetKeyState("F4", "P") ; Win + Down
+		Send, #{Down}
+    else ; Down
+        Send, {Down}
+return	
+
+` & l::
+    if (GetKeyState("Shift", "P") || GetKeyState("F1", "P")) ; Shift + Right
+        Send, +{Right}
+	else if (GetKeyState("Ctrl", "P") || GetKeyState("F2", "P")) ; Ctrl + Right
+		Send, ^{Right} 
+	else if (GetKeyState("Alt", "P") || GetKeyState("F3","P")) ; Alt + Right 
+		Send, !{Right}
+	else if GetKeyState("F4", "P") ; Win + Right
+		Send, #{Right}
+    else ; Right
+        Send, {Right}
+return
+
++`::send {~} ; shift + ` = ~
+
+`::`
+
+Right::Ctrl
+
+Left::Send, {AppsKey}
+
+;--------------------------------------------------------------------------------------------------------------------
+#IF 
+;--------------------------------------------------------------------------------------------------------------------
+
 ;more new files 2
 ;=====================================================================================================================
 ; Function keys
@@ -5535,101 +5859,7 @@ if (KeyPressCount <3)
 	}
 SetTimer, fnnumpadahkkeystate, 500
 return
+;============================================================================================================
 
-;=====================================================================================================================
-; Keyboard keys
-;=====================================================================================================================
 
-` & j::
-    if GetKeyState("Shift", "P") ; shift + left
-        Send, +{Left}
-	else if GetKeyState("Ctrl", "P") ; ctrl + left
-		Send, ^{Left} 
-	else if GetKeyState("Alt", "P") ; alt + left 
-		Send, !{Left}
-	else if GetKeyState("Esc", "P") ; win + left
-		Send, #{Left}
-    else ; left
-        Send, {Left}
-return
 
-` & i::
-    if GetKeyState("Shift", "P")
-        Send, +{Up}
-	else if GetKeyState("Ctrl", "P")
-		Send, ^{Up}
-	else if GetKeyState("Alt", "P")
-		Send, !{Up}
-	else if GetKeyState("Esc", "P")
-		Send, #{Up}
-    else
-        Send, {Up}
-return
-
-` & k::
-    if GetKeyState("Shift", "P")
-        Send, +{Down}
-	else if GetKeyState("Ctrl", "P")
-		Send, ^{Down}
-	else if GetKeyState("Alt", "P")
-		Send, !{Down}
-	else if GetKeyState("Esc", "P")
-		Send, #{Down}	
-    else				
-        Send, {Down}
-return	
-
-` & l::
-    if GetKeyState("Shift", "P")
-        Send, +{Right}
-	else if GetKeyState("Ctrl", "P")
-		Send, ^{Right}
-	else if GetKeyState("Alt", "P")
-		Send, !{Right}	
-	else if GetKeyState("Esc", "P")
-		Send, #{Right}
-    else
-        Send, {Right}
-return
-
-+`::send {~} ; shift + ` = ~
-
-`::`
-
-; sc029::
-;     while GetKeyState("sc029", "P")  ; Use scan code for backtick (works even though ` is special)
-;     {
-;         Send, ``
-;         Sleep, 10  ; Repeat speed
-;     }
-; return
-
-    ; if ((A_PriorHotkey = "`") && (heldTime < 400)){
-    ;     return  ; It was part of a combo
-	; }
-
-; {
-; 	    start := A_TickCount
-
-;     ; Wait until 400ms passed or key released
-;     Loop
-;     {
-;         if (!GetKeyState("sc029", "P"))
-;             break
-
-;         heldTime := A_TickCount - start
-;         if (heldTime > 400)
-;         {
-;             ; Now start sending `p` repeatedly while still held
-;             while GetKeyState("sc029", "P")
-;             {
-;                 Send, ``
-;                 Sleep, 10
-;             }
-;             return
-;         }
-;         Sleep, 10
-;     }
-
-;     ; If released before 400ms, send one `p`
-; }
