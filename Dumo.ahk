@@ -5461,7 +5461,7 @@ Return
 	else if (GetKeyState("Alt", "P") || GetKeyState("F3","P")) ; Alt + Left 
 		Send, !{Left}
 	else if GetKeyState("F4", "P") ; Win + Left
-		Send, #{Left}
+		Send, #{Left}{Esc}
     else ; Left
         Send, {Left}
 return
@@ -5474,7 +5474,7 @@ return
 	else if (GetKeyState("Alt", "P") || GetKeyState("F3","P")) ; Alt + Up
 		Send, !{Up}
 	else if GetKeyState("F4", "P") ; Win + up
-		Send, #{Up}
+		Send, #{Up}{Esc}
     else ; Up
         Send, {Up}
 return
@@ -5487,7 +5487,7 @@ return
 	else if (GetKeyState("Alt", "P") || GetKeyState("F3","P")) ; Alt + Down 
 		Send, !{Down}
 	else if GetKeyState("F4", "P") ; Win + Down
-		Send, #{Down}
+		Send, #{Down}{Esc}
     else ; Down
         Send, {Down}
 return	
@@ -5500,7 +5500,7 @@ return
 	else if (GetKeyState("Alt", "P") || GetKeyState("F3","P")) ; Alt + Right 
 		Send, !{Right}
 	else if GetKeyState("F4", "P") ; Win + Right
-		Send, #{Right}
+		Send, #{Right}{Esc}
     else ; Right
         Send, {Right}
 return

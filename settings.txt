@@ -12,5 +12,5 @@ screenclipstate=10
 sharexclipstate=00
 pstpstplnste=0
 numpadkeytoggle=0
-ChoosePlayer=00
+ChoosePlayer=10
 tklmode=01
