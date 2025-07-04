@@ -5453,7 +5453,7 @@ Return
 ` & F3::return
 ` & F4::return
 
-` & j::
+` & h::
     if (GetKeyState("Shift", "P") || GetKeyState("F1", "P")) ; Shift + Left 
         Send, +{Left}
 	else if (GetKeyState("Ctrl", "P") || GetKeyState("F2", "P")) ; Ctrl + Left
@@ -5466,7 +5466,7 @@ Return
         Send, {Left}
 return
 
-` & i::
+` & k::
     if (GetKeyState("Shift", "P") || GetKeyState("F1", "P")) ; Shift + Up
         Send, +{Up}
 	else if (GetKeyState("Ctrl", "P") || GetKeyState("F2", "P")) ; Ctrl + Up
@@ -5479,7 +5479,7 @@ return
         Send, {Up}
 return
 
-` & k::
+` & j::
     if (GetKeyState("Shift", "P") || GetKeyState("F1", "P")) ; Shift + Down
         Send, +{Down}
 	else if (GetKeyState("Ctrl", "P") || GetKeyState("F2", "P")) ; Ctrl + Down
@@ -5508,11 +5508,6 @@ return
 +`::send {~} ; shift + ` = ~
 
 `::`
-
-Right::Ctrl
-
-Left::Send, {AppsKey}
-
 ;--------------------------------------------------------------------------------------------------------------------
 #IF 
 ;--------------------------------------------------------------------------------------------------------------------
