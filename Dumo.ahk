@@ -837,7 +837,7 @@ If (KeyPressCount = 1)
 					}
 					Return False
 				} 
-                SplashTextOn,210,40,, Recording Finshed 
+                SplashTextOn,300,70,, Recording Finshed 
 		        ;audiotext := "`n Recording Finished `n "
 				audiotext := "Recording Finished"
 				Sleep 1000 
@@ -850,7 +850,7 @@ If (KeyPressCount = 1)
                 recstartv := !recstartv
                 recpausev := 0
                 SendInput, ^+{Space}
-				SplashTextOn,210,40,, Recording Started 
+				SplashTextOn,300,70,, Recording Started 
 		        Sleep 1000
                 SplashTextOff
 				;ToolTip, % "`n Recording `n "
@@ -865,7 +865,7 @@ else if (KeyPressCount > 1)
             {
                 SendInput, ^{Space}
                 recpausev := 0
-                SplashTextOn,210,40,,Recording Continue
+                SplashTextOn,300,70,,Recording Continue
                 Sleep 1000
                 SplashTextOff
 				;audiotext := "`n Recording Continue `n "
@@ -876,7 +876,7 @@ else if (KeyPressCount > 1)
             {
                 SendInput, ^{Space}
                 recpausev := 1
-                SplashTextOn,210,40,,Recording Paused
+                SplashTextOn,300,70,,Recording Paused
                 Sleep 1000
                 SplashTextOff
 				;audiotext := "`n Recording Pause `n "
@@ -886,7 +886,7 @@ else if (KeyPressCount > 1)
         else If (recstartv = 0)
             {
                 ToolTip 
-				SplashTextOn,250,40,,Recording Not Started
+				SplashTextOn,350,70,,Recording Not Started
                 ;ToolTip, % "`n Recording Not Started `n "
 				ToolTip,    Recording Not Started
                 Sleep 1000
@@ -895,7 +895,7 @@ else if (KeyPressCount > 1)
             }
         else 
             {
-                SplashTextOn,250,40,,Recording Not Started
+                SplashTextOn,350,70,,Recording Not Started
 				;ToolTip, % "`n Recording Not Started `n "
 				ToolTip,    Recording Not Started
                 Sleep 1000
@@ -961,11 +961,12 @@ else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=10)
 	}
 else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=11)
 	{
-		SendInput, !+6
+		SendInput, !+5
 	}
 else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=00)
 	{
-		SendInput, {Media_Play_Pause} 
+		;SendInput, {Media_Play_Pause} 
+		SendInput, ^+6
 	}
 else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
 	{
