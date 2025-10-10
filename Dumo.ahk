@@ -157,6 +157,16 @@ if (numpadkeytoggle == 1){
 	Menu, numpadkeystate, uncheck, Disable
 	Menu, numpadkeystate, check, Enable
 }
+;----------------------------------------------------------------------------------------;tkl, any keyboard navigation button to media button (<- to backward | -> to forward | ^ to speed up | v to speed down | 'Alt' to play pause)
+Menu, spclnavigationbuttonmode, Add, ON, spclnavigationbuttonon
+Menu, spclnavigationbuttonmode, Add, OFF, spclnavigationbuttonoff
+if (spclnavbutm = 01){
+	Menu, spclnavigationbuttonmode, check, ON
+	Menu, spclnavigationbuttonmode, uncheck, OFF
+} else if (spclnavbutm = 00){
+	Menu, spclnavigationbuttonmode, uncheck, ON
+	Menu, spclnavigationbuttonmode, check, OFF
+}
 ;---------------------------------------------------------------------------------------:Mouse scroll wheel state changer
 Menu, scrolledstate, Add, WheelUP - ScrollUp || WheelDown - ScrollDown, wheelscrollupdownchoose
 Menu, scrolledstate, Add, WheelUp - RightArrow || WheelDown - LeftArrow, wheelrightleftarrowchoose
@@ -230,7 +240,7 @@ if (tklmode == 01){
 	Menu, tklksfmodeselector, uncheck, ON
     Menu, tklksfmodeselector, check, OFF
 }
-;----------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------;
 
 ;======================================================================================
 ;Menu, Tray icons, menu and texts
@@ -251,6 +261,8 @@ Menu, Tray, Add
 Menu, Tray, Add, Fn AHK Keys State, :fnkeystate
 Menu, Tray, Add
 Menu, Tray, Add, Numpad AHK Kyes State, :numpadkeystate
+Menu, Tray, Add
+Menu, Tray, Add, Keyboard Nav_Btn to Media_Control, :spclnavigationbuttonmode
 Menu, Tray, Add
 Menu, Tray, Add, ScrollWheel - State, :scrolledstate
 Menu, Tray, Add, Mouse_Middle_Button State, :mousemdlbtnstate
@@ -306,6 +318,8 @@ Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Fn Keys State, :fnkeystate
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, Numpad AHK Kyes State, :numpadkeystate
+Menu, MNFunctions, Add
+Menu, MNFunctions, Add, Keyboard Nav_Btn to Media_Control, :spclnavigationbuttonmode
 Menu, MNFunctions, Add
 Menu, MNFunctions, Add, ScrollWheel - State, :scrolledstate
 Menu, MNFunctions, Add, Mouse_Middle_Button State, :mousemdlbtnstate
@@ -1033,6 +1047,50 @@ else
 		SendInput, ^+0
 	}
 return
+
+decundo:
+if (spustate = 0)
+    {
+        if (ChoosePlayer=11)
+			{
+				SendInput, !+3
+			}
+		else if (ChoosePlayer=10)
+			{
+				SendInput, ^!7
+			}
+		else
+			{
+				SendInput, ^+7
+			}
+    }
+else if (spustate = 1)
+    {
+        SendInput, ^z
+    }
+return
+
+incredo:
+if (spustate = 0)
+	{
+		if (ChoosePlayer=11)
+			{
+				SendInput, !+4
+			}
+		else if (ChoosePlayer=10)
+			{
+				SendInput, ^!8
+			}
+		else
+			{
+				SendInput, ^+8
+			}
+	}
+else if (spustate = 1)
+    {
+        SendInput, ^y
+    }
+return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 Screenshot1orScreenshot2State0: ;create non-spaced labels for menu items
@@ -1307,13 +1365,38 @@ numpadkeysenable: ;mean fnkeys are enable
 	SoundBeep, 700, 800
 	Menu, numpadkeystate, uncheck, Disable
 	Menu, numpadkeystate, check, Enable
-	SplashTextOn,300,40,,Numpad AHK Keys Enable
+	SplashTextOn,350,40,,Numpad AHK Keys Enable
 	Sleep 800
 	SplashTextOff
 	gosub, iconchanger
 }
 Return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////
+spclnavigationbuttonon:
+{
+	spclnavbutm := 01
+	saveSetting("spclnavbutm", spclnavbutm, settingsFile)
+	SoundBeep, 700, 800
+	Menu, spclnavigationbuttonmode, check, ON
+	Menu, spclnavigationbuttonmode, uncheck, OFF
+	SplashTextOn, 350, 40,, NavBtn changed to Media_Control
+	Sleep 800
+	SplashTextOff
+}
+Return
+
+spclnavigationbuttonoff:
+{
+	spclnavbutm := 00
+	saveSetting("spclnavbutm", spclnavbutm, settingsFile)
+	SoundBeep, 700, 800
+	Menu, spclnavigationbuttonmode, uncheck, ON
+	Menu, spclnavigationbuttonmode, check, OFF
+	SplashTextOn, 350, 40,, NavBtn changed to Default
+	Sleep 800
+	SplashTextOff
+}
+Return
 
 wheelscrollupdownchoose:
 {
@@ -5302,48 +5385,12 @@ return
 ;Undo and Redo
 Numpad1::
 NumpadEnd::
-if (spustate = 0)
-	{
-		if (ChoosePlayer=11)
-			{
-				SendInput, !+3
-			}
-		else if (ChoosePlayer=10)
-			{
-				SendInput, ^!7
-			}
-		else
-			{
-				SendInput, ^+7
-			}
-	}
-else if (spustate = 1)
-    {
-        SendInput, ^z
-    }
+gosub, decundo
 return
 
 Numpad7::
 NumpadHome::
-if (spustate = 0)
-	{
-		if (ChoosePlayer=11)
-			{
-				SendInput, !+4
-			}
-		else if (ChoosePlayer=10)
-			{
-				SendInput, ^!8
-			}
-		else
-			{
-				SendInput, ^+8
-			}
-	}
-else if (spustate = 1)
-    {
-        SendInput, ^y
-    }
+gosub, incredo
 return
 
 ;new things pasted from here
@@ -5662,48 +5709,12 @@ return
 
 ;Speed slow and undo
 F4::
-if (spustate = 0)
-    {
-        if (ChoosePlayer=11)
-			{
-				SendInput, !+3
-			}
-		else if (ChoosePlayer=10)
-			{
-				SendInput, ^!7
-			}
-		else
-			{
-				SendInput, ^+7
-			}
-    }
-else if (spustate = 1)
-    {
-        SendInput, ^z
-    }
+gosub, decundo
 return
 
 ;Speed fast and Redo
 F5::
-if (spustate = 0)
-	{
-		if (ChoosePlayer=11)
-			{
-				SendInput, !+4
-			}
-		else if (ChoosePlayer=10)
-			{
-				SendInput, ^!8
-			}
-		else
-			{
-				SendInput, ^+8
-			}
-	}
-else if (spustate = 1)
-    {
-        SendInput, ^y
-    }
+gosub, incredo
 return
 
 ;Aimp Pause/Play
@@ -5791,6 +5802,41 @@ return
 ;--------------------------------------------------------------------------------------------------------------------
 #IF
 ;--------------------------------------------------------------------------------------------------------------------
+
+;=====================================================================================================================
+; Navigation keys to Media Control
+;=====================================================================================================================
+
+;--------------------------------------------------------------------------------------------------------------------
+#IF (spclnavbutm=01)
+;--------------------------------------------------------------------------------------------------------------------
+
+RAlt::
+    gosub, playpausepress
+return
+
+; Hotkey for Left Arrow
+Left::
+    gosub, backwardbysec
+return
+
+; Hotkey for Right Arrow
+Right::
+    gosub, forwardbysec
+return
+
+Up::
+	gosub, decundo
+Return
+
+Down::
+	gosub, incredo
+return
+;--------------------------------------------------------------------------------------------------------------------
+#IF
+;--------------------------------------------------------------------------------------------------------------------
+
+
 ;============================================================================================================
 ;Capslock || Numlock || Scrollock indicators
 ;============================================================================================================
