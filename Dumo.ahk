@@ -790,7 +790,7 @@ If (KeyPressCount = 1)
 				; Retrieve files in a certain directory sorted by modification date:
 				FileList :=  "" ; Initialize to be blank
 				; Create a list of those files consisting of the time the file was modified and the file path separated by tab
-				Loop, C:\Users\amana\Music\Lecture Recordings\*.mp3*
+				Loop, C:\DaTa\#5. Music\Lecture_Recordings\*.mp3*
 					FileList .= A_LoopFileTimeModified . "`t" . A_LoopFileLongPath . "`n"
 				Sort, FileList, R  ;   ; Sort by time modified in reverse order
 				Loop, Parse, FileList, `n
@@ -1581,7 +1581,7 @@ Return
 ;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 lectruerecordingopen:
-run, C:\Users\amana\Music\Lecture Recordings
+run, C:\DaTa\#5. Music\Lecture_Recordings
 Return
 
 exploreedopen:
