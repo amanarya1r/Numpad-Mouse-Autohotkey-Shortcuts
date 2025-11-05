@@ -97,9 +97,10 @@ if (spustate == 0){
 	Menu, speedunrestate, uncheck, SpeedUp || SpeedDown
 	Menu, speedunrestate, check, Redo || Undo
 }
-;---------------------------------------------------------------------------------------; copycut, copylinkcopycut 4 onenote
+;---------------------------------------------------------------------------------------; copycut, copylinkcopycut 4 onenote, copy audio or screenshot
 Menu, copycutstate, Add, Copy || Cut, copycutchoose
 Menu, copycutstate, Add, CopyLinkOneNote || Copy || Cut, copylinkcopycutchoose
+Menu, copycutstate, Add, Copy Audio || Copy Screenshot, copyaudioorscreenshotchoose
 if (cpcstate == 0){
 	Menu, copycutstate, check, Copy || Cut
 	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
@@ -1180,8 +1181,10 @@ Return
 copycutchoose:
 {
 	cpcstate:=0
+	cacstate:=0
 	saveSetting("cpcstate", cpcstate, settingsFile)
 	Menu, copycutstate, check, Copy || Cut
+	Menu, copycutstate, uncheck, Copy Audio || Copy Screenshot
 	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
 	MsgBox, 262144, copy/cut,
 	(
@@ -1194,9 +1197,11 @@ Return
 copylinkcopycutchoose:
 {
 	cpcstate:=1
+	cacstate:=0
 	saveSetting("cpcstate", cpcstate, settingsFile)
 	Menu, copycutstate, uncheck, Copy || Cut
-	Menu, copycutstate, check, CopyLinkOneNote || Copy || Cut
+	Menu, copycutstate, check, Copy Audio || Copy Screenshot
+	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
 	MsgBox, 262144, copylink/copy/cut,
 	(
 		copylink(onenote) - 1 press
@@ -1205,6 +1210,20 @@ copylinkcopycutchoose:
 	)  
 }
 Return
+
+copyaudioorscreenshotchoose:
+{
+	cacstate:=1
+	saveSetting("cacstate", cacstate, settingsFile)
+	Menu, copycutstate, uncheck, Copy || Cut
+	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
+	Menu, copycutstate, check, Copy Audio || Copy Screenshot
+	MsgBox, 262144, copy audio/screenshot,
+	(
+		copy audio - 1 press
+		`ncopy screenshot - 2 press
+	) 
+}
 ;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 pasteon1press:
@@ -2034,7 +2053,7 @@ if (KeyPressCount <4)
 SetTimer, vKeyPressMonitor, 550
 return
 vKeyPressMonitor:
-if (cpcstate = 0)
+if (cpcstate = 0) And (cacstate=0)
     {
         If (KeyPressCount = 1)
             {
@@ -2049,7 +2068,7 @@ if (cpcstate = 0)
                 Sleep 400
             }
     }
-else if (cpcstate = 1)
+else if (cpcstate = 1) And (cacstate=0)
     {
         If (KeyPressCount = 1) ;copy link to paragraph part
             {
@@ -2074,6 +2093,156 @@ else if (cpcstate = 1)
 				Sleep 400
 			}
     }
+Else
+{
+	If (KeyPressCount = 1)
+		{
+			; Retrieve files in a certain directory sorted by modification date:
+			FileList :=  "" ; Initialize to be blank
+			; Create a list of those files consisting of the time the file was modified and the file path separated by tab
+			Loop, \\TIX\DaTa\#5. Music\Lecture_Recordings\*.mp3*
+				FileList .= A_LoopFileTimeModified . "`t" . A_LoopFileLongPath . "`n"
+			Sort, FileList, R  ;   ; Sort by time modified in reverse order
+			Loop, Parse, FileList, `n
+				{
+					If (A_LoopField = "") ; omit the last linefeed (blank item) at the end of the list.
+						Continue
+					StringSplit, FileItem, A_LoopField, %A_Tab%  ; Split into two parts at the tab char
+					; FileItem1 is FileTimeModified und FileItem2 is FileName
+						ClipBoardSetFiles1(FileItem2)
+						Break
+				}
+
+			ClipboardSetFiles1(FilesToSet, DropEffect := "Copy") {
+				; FilesToSet - list of fully qualified file pathes separated by "`n" or "`r`n"
+				; DropEffect - preferred drop effect, either "Copy", "Move" or "" (empty string)
+				Static TCS := A_IsUnicode ? 2 : 1 ; size of a TCHAR
+				Static PreferredDropEffect := DllCall("RegisterClipboardFormat", "Str", "Preferred DropEffect")
+				Static DropEffects := {1: 1, 2: 2, Copy: 1, Move: 2}
+				; -------------------------------------------------------------------------------------------------------------------
+				; Count files and total string length
+				TotalLength := 0
+				FileArray := []
+				Loop, Parse, FilesToSet, `n, `r
+				{
+					If (Length := StrLen(A_LoopField))
+						FileArray.Push({Path: A_LoopField, Len: Length + 1})
+					TotalLength += Length
+				}
+				FileCount := FileArray.Length()
+				If !(FileCount && TotalLength)
+					Return False
+				; -------------------------------------------------------------------------------------------------------------------
+				; Add files to the clipboard
+				If DllCall("OpenClipboard", "Ptr", A_ScriptHwnd) && DllCall("EmptyClipboard") {
+					; HDROP format ---------------------------------------------------------------------------------------------------
+					; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
+					hDrop := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 20 + (TotalLength + FileCount + 1) * TCS, "UPtr")
+					pDrop := DllCall("GlobalLock", "Ptr" , hDrop)
+					Offset := 20
+					NumPut(Offset, pDrop + 0, "UInt")         ; DROPFILES.pFiles = offset of file list
+					NumPut(!!A_IsUnicode, pDrop + 16, "UInt") ; DROPFILES.fWide = 0 --> ANSI, fWide = 1 --> Unicode
+					For Each, File In FileArray
+						Offset += StrPut(File.Path, pDrop + Offset, File.Len) * TCS
+					DllCall("GlobalUnlock", "Ptr", hDrop)
+					DllCall("SetClipboardData","UInt", 0x0F, "UPtr", hDrop) ; 0x0F = CF_HDROP
+					; Preferred DropEffect format ------------------------------------------------------------------------------------
+					If (DropEffect := DropEffects[DropEffect]) {
+						; Write Preferred DropEffect structure to clipboard to switch between copy/cut operations
+						; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
+						hMem := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 4, "UPtr")
+						pMem := DllCall("GlobalLock", "Ptr", hMem)
+						NumPut(DropEffect, pMem + 0, "UChar")
+						DllCall("GlobalUnlock", "Ptr", hMem)
+						DllCall("SetClipboardData", "UInt", PreferredDropEffect, "Ptr", hMem)
+					}
+					DllCall("CloseClipboard")
+					Return True
+				}
+				Return False
+			} 
+			SplashTextOn,500,70,, Copied! Audio File
+			audiotext := "Copied Audio File to Clipboard"
+			Sleep 1000 
+			SplashTextOff  
+			SetTimer, FollowMouse, Off
+			ToolTip        
+		}
+	else if (KeyPressCount > 1)
+		{
+			; Retrieve files in a certain directory sorted by modification date:
+			FileList :=  "" ; Initialize to be blank
+			; Create a list of those files consisting of the time the file was modified and the file path separated by tab
+			Loop, \\TIX\DaTa\#4. ScreenShots\*.png*
+				FileList .= A_LoopFileTimeModified . "`t" . A_LoopFileLongPath . "`n"
+			Sort, FileList, R  ;   ; Sort by time modified in reverse order
+			Loop, Parse, FileList, `n
+				{
+					If (A_LoopField = "") ; omit the last linefeed (blank item) at the end of the list.
+						Continue
+					StringSplit, FileItem, A_LoopField, %A_Tab%  ; Split into two parts at the tab char
+					; FileItem1 is FileTimeModified und FileItem2 is FileName
+						ClipBoardSetFiles2(FileItem2)
+						Break
+				}
+
+			ClipboardSetFiles2(FilesToSet, DropEffect := "Copy") {
+				; FilesToSet - list of fully qualified file pathes separated by "`n" or "`r`n"
+				; DropEffect - preferred drop effect, either "Copy", "Move" or "" (empty string)
+				Static TCS := A_IsUnicode ? 2 : 1 ; size of a TCHAR
+				Static PreferredDropEffect := DllCall("RegisterClipboardFormat", "Str", "Preferred DropEffect")
+				Static DropEffects := {1: 1, 2: 2, Copy: 1, Move: 2}
+				; -------------------------------------------------------------------------------------------------------------------
+				; Count files and total string length
+				TotalLength := 0
+				FileArray := []
+				Loop, Parse, FilesToSet, `n, `r
+				{
+					If (Length := StrLen(A_LoopField))
+						FileArray.Push({Path: A_LoopField, Len: Length + 1})
+					TotalLength += Length
+				}
+				FileCount := FileArray.Length()
+				If !(FileCount && TotalLength)
+					Return False
+				; -------------------------------------------------------------------------------------------------------------------
+				; Add files to the clipboard
+				If DllCall("OpenClipboard", "Ptr", A_ScriptHwnd) && DllCall("EmptyClipboard") {
+					; HDROP format ---------------------------------------------------------------------------------------------------
+					; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
+					hDrop := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 20 + (TotalLength + FileCount + 1) * TCS, "UPtr")
+					pDrop := DllCall("GlobalLock", "Ptr" , hDrop)
+					Offset := 20
+					NumPut(Offset, pDrop + 0, "UInt")         ; DROPFILES.pFiles = offset of file list
+					NumPut(!!A_IsUnicode, pDrop + 16, "UInt") ; DROPFILES.fWide = 0 --> ANSI, fWide = 1 --> Unicode
+					For Each, File In FileArray
+						Offset += StrPut(File.Path, pDrop + Offset, File.Len) * TCS
+					DllCall("GlobalUnlock", "Ptr", hDrop)
+					DllCall("SetClipboardData","UInt", 0x0F, "UPtr", hDrop) ; 0x0F = CF_HDROP
+					; Preferred DropEffect format ------------------------------------------------------------------------------------
+					If (DropEffect := DropEffects[DropEffect]) {
+						; Write Preferred DropEffect structure to clipboard to switch between copy/cut operations
+						; 0x42 = GMEM_MOVEABLE (0x02) | GMEM_ZEROINIT (0x40)
+						hMem := DllCall("GlobalAlloc", "UInt", 0x42, "UInt", 4, "UPtr")
+						pMem := DllCall("GlobalLock", "Ptr", hMem)
+						NumPut(DropEffect, pMem + 0, "UChar")
+						DllCall("GlobalUnlock", "Ptr", hMem)
+						DllCall("SetClipboardData", "UInt", PreferredDropEffect, "Ptr", hMem)
+					}
+					DllCall("CloseClipboard")
+					Return True
+				}
+				Return False
+			} 
+			SplashTextOn,500,70,, Copied! Screenshot
+			audiotext := "Copied Screenshot to Clipboard"
+			Sleep 1000 
+			SplashTextOff  
+			SetTimer, FollowMouse, Off
+			ToolTip        
+		}
+}
+
 KeyPressCount := 0
 SetTimer, vKeyPressMonitor, Off
 Tooltip,
@@ -2593,10 +2762,12 @@ else
 	SplashTextOff
 	}
 return
-/*
+
+
 ;--------------------------------------------------------------------------------------------------------------------
 #IF (numpadkeytoggle=1)
 ;--------------------------------------------------------------------------------------------------------------------
+
 ~NumLock::
 nste:=GetKeyState("NumLock","T")
 if (nste=1)
@@ -2612,10 +2783,12 @@ else
 	SplashTextOff
 	}
 return
+
 ;--------------------------------------------------------------------------------------------------------------------
 #IF
 ;--------------------------------------------------------------------------------------------------------------------
-*/
+
+
 ~ScrollLock::
 sste:=GetKeyState("ScrollLock","T")
 if (sste=1)
