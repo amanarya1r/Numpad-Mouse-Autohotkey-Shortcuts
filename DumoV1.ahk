@@ -741,11 +741,14 @@ mbclickmonitor:
 				}
 			else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=11)
 				{
-					SendInput, !+6
+					SendInput, !+5
+					SendInput, !+7
 				}
 			else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=00)
 				{
-					SendInput, {Media_Play_Pause} 
+					; SendInput, {Media_Play_Pause}
+					SendInput, ^+6
+					SendInput, ^+2 
 				}
 			else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
 				{
@@ -755,6 +758,7 @@ mbclickmonitor:
 			else
 				{
 					SendInput, {Media_Play_Pause} 
+					MsgBox, [ , Title, ri, ]
 				}
 			return
     	} 
@@ -799,11 +803,13 @@ else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=10)
 	}
 else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=11)
 	{
-		SendInput, !+6
+		SendInput, !+5
+		SendInput, !+7
 	}
 else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=00)
 	{
-		SendInput, {Media_Play_Pause} 
+		SendInput, ^+6
+		SendInput, ^+2
 	}
 else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
 	{
@@ -1013,11 +1019,13 @@ else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=10)
 else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=11)
 	{
 		SendInput, !+5
+		SendInput, !+7
 	}
 else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=00)
 	{
 		;SendInput, {Media_Play_Pause} 
 		SendInput, ^+6
+		SendInput, ^+2		
 	}
 else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
 	{
@@ -1224,6 +1232,8 @@ copyaudioorscreenshotchoose:
 		`ncopy screenshot - 2 press
 	) 
 }
+Return
+
 ;/////////////////////////////////////////////////////////////////////////////////////////////////
 
 pasteon1press:
@@ -1815,6 +1825,20 @@ Return
 ^+9::Send ^!9 ; Backward by -5 sec
 
 ^+0::Send ^!0 ; Forward by +5 sec
+
+;--------------------------------------------------------------------------------------------------------------------
+#IF
+;--------------------------------------------------------------------------------------------------------------------
+
+;---------------------------------------------------------------------------------------------------------------------
+#IF (ChoosePlayer=11)
+;---------------------------------------------------------------------------------------------------------------------
+; Shortcut diversion for amazon mouse by which forward and backward keys does work on pot player 
+; ChoosePlayer=10 is for choosing opera browser
+
+^+9::Send !+1 ; Backward by -5 sec
+
+^+0::Send !+2 ; Forward by +5 sec
 
 ;--------------------------------------------------------------------------------------------------------------------
 #IF
