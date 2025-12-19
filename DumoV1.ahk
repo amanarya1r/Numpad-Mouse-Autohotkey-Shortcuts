@@ -63,19 +63,19 @@ loadSettings(settingsFile)
 ;submenu for the menu and tray menu
 Menu, mediakey4allchoose, Add, Media_Key (default), mk4acDefault
 Menu, mediakey4allchoose, Add, Media_Key (PotPlayer), mk4acPotPlayer
-Menu, mediakey4allchoose, Add, Media_Key (Opera), mk4acOpera
+Menu, mediakey4allchoose, Add, Media_Key (Vivaldi), mk4acVivaldi
 if ((mdkystate == 0) && (ChoosePlayer == 00)){
 	Menu, mediakey4allchoose, check, Media_Key (default)
     Menu, mediakey4allchoose, uncheck, Media_Key (PotPlayer)
-	Menu, mediakey4allchoose, uncheck, Media_Key (Opera)
+	Menu, mediakey4allchoose, uncheck, Media_Key (Vivaldi)
 } else if ((mdkystate == 0) && (ChoosePlayer == 10)){
 	Menu, mediakey4allchoose, uncheck, Media_Key (default)
     Menu, mediakey4allchoose, check, Media_Key (PotPlayer)
-	Menu, mediakey4allchoose, uncheck, Media_Key (Opera)
+	Menu, mediakey4allchoose, uncheck, Media_Key (Vivaldi)
 } else if ((mdkystate == 0) && (ChoosePlayer == 11)){
 	Menu, mediakey4allchoose, uncheck, Media_Key (default)
     Menu, mediakey4allchoose, uncheck, Media_Key (PotPlayer)
-	Menu, mediakey4allchoose, check, Media_Key (Opera)
+	Menu, mediakey4allchoose, check, Media_Key (Vivaldi)
 }
 ;---------------------------------------------------------------------------------------
 Menu, sharexshotstate, Add, ScrnShot - 1 || ReptShot - 2, Screenshot1orScreenshot2State1
@@ -1314,7 +1314,7 @@ mk4acDefault:
 	saveSetting("ChoosePlayer", ChoosePlayer, settingsFile)
     Menu, mediakey4allchoose, check, Media_Key (default)
     Menu, mediakey4allchoose, uncheck, Media_Key (PotPlayer)
-	Menu, mediakey4allchoose, uncheck, Media_Key (Opera)
+	Menu, mediakey4allchoose, uncheck, Media_Key (Vivaldi)
     ;checking and unchecking mkeyonestate
     Menu, mkeyonestate, check, Media_Key 4 All
 	Menu, mkeyonestate, uncheck, Media_Key 4 OneNote
@@ -1334,7 +1334,7 @@ mk4acPotPlayer:
 	saveSetting("ChoosePlayer", ChoosePlayer, settingsFile)
     Menu, mediakey4allchoose, uncheck, Media_Key (default)
     Menu, mediakey4allchoose, check, Media_Key (PotPlayer)
-	Menu, mediakey4allchoose, uncheck, Media_Key (Opera)
+	Menu, mediakey4allchoose, uncheck, Media_Key (Vivaldi)
     ;checking and unchecking mkeyonestate
     Menu, mkeyonestate, check, Media_Key 4 All
 	Menu, mkeyonestate, uncheck, Media_Key 4 OneNote
@@ -1346,7 +1346,7 @@ mk4acPotPlayer:
 } 
 return
 
-mk4acOpera:
+mk4acVivaldi:
 {
 	mdkystate:= 0
 	ChoosePlayer:=11
@@ -1354,14 +1354,14 @@ mk4acOpera:
 	saveSetting("ChoosePlayer", ChoosePlayer, settingsFile)
 	Menu, mediakey4allchoose, uncheck, Media_Key (default)
     Menu, mediakey4allchoose, uncheck, Media_Key (PotPlayer)
-	Menu, mediakey4allchoose, check, Media_Key (Opera)
+	Menu, mediakey4allchoose, check, Media_Key (Vivaldi)
 	;checking and unchecking mkeyonestate
     Menu, mkeyonestate, check, Media_Key 4 All
 	Menu, mkeyonestate, uncheck, Media_Key 4 OneNote
 	MsgBox, 262144, Media_Play_Pause,
 	(
 		Play/Pause - Media_Play_Pause
-        `nMediaKey -4- Opera
+        `nMediaKey -4- Vivaldi
 	) 
 }
 Return
@@ -1834,7 +1834,7 @@ Return
 #IF (ChoosePlayer=11)
 ;---------------------------------------------------------------------------------------------------------------------
 ; Shortcut diversion for amazon mouse by which forward and backward keys does work on pot player 
-; ChoosePlayer=10 is for choosing opera browser
+; ChoosePlayer=10 is for choosing Vivaldi browser
 
 ^+9::Send !+1 ; Backward by -5 sec
 
