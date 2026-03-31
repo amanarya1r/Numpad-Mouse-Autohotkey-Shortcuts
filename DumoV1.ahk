@@ -1,6 +1,7 @@
 #SingleInstance, Force
 #NoEnv
 #Persistent
+; #MaxThreadsPerHotkey 2
 SetWorkingDir %A_ScriptDir%
 
 ; Path to your settings file
@@ -804,12 +805,12 @@ else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=10)
 else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=11)
 	{
 		SendInput, !+5
-		SendInput, !+7
+		;SendInput, !+7
 	}
 else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=00)
 	{
 		SendInput, ^+6
-		SendInput, ^+2
+		;SendInput, ^+2
 	}
 else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
 	{
@@ -1019,13 +1020,13 @@ else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=10)
 else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=11)
 	{
 		SendInput, !+5
-		SendInput, !+7
+		;SendInput, !+7
 	}
 else if (mdastate=0) and (mdkystate=0) and (ChoosePlayer=00)
 	{
 		;SendInput, {Media_Play_Pause} 
 		SendInput, ^+6
-		SendInput, ^+2		
+		;SendInput, ^+2		
 	}
 else if (mdastate=1) and WinExist("ahk_exe HD-Player.exe") 
 	{
@@ -2287,28 +2288,130 @@ if (KeyPressCount <3)
 		Tooltip, %KeyPressCount%
 	}
 SetTimer, xKeyPressMonitor, 500
+return      
+
+;Play n Pause else Alt key (when hold)
+$Numpad5::
+$NumpadClear::
+    ; Record the start time and clear any previous timer
+    N5_StartTime := A_TickCount
+    SetTimer, LongNumpad5Check, -10 ; Run the check once, almost immediately
 return
 
-;Volume Down
-Numpad2::Volume_Down
-NumpadDown::Volume_Down
-
-;Backward by 5sec
-Numpad4::
-NumpadLeft::
-gosub, backwardbysec
+$Numpad5 Up::
+$NumpadClear Up::
+    SetTimer, LongNumpad5Check, Off ; Stop checking
+    
+    ; If we were in "Alt mode" (Alt is physically/logically down), release it
+    if GetKeyState("Alt") {
+        Send, {Alt Up}
+    } 
+    ; If it was a quick tap (less than 650ms) and NOT an Alt-Tab session
+    else if (A_TickCount - N5_StartTime < 650) {
+        if IsLabel("playpausepress")
+            gosub, playpausepress
+    }
 return
 
-;Play/Pause 
-Numpad5::
-NumpadClear::
-gosub, playpausepress
-return	
+LongNumpad5Check:
+    ; This loop runs in the background without blocking other hotkeys
+    while GetKeyState("Numpad5", "P") || GetKeyState("NumpadClear", "P") {
+        if (A_TickCount - N5_StartTime > 650) {		
+            if !GetKeyState("Alt") {
+                ; The {vkE8} is the "Magic Mask" that stops the Alt-Code trap
+                Send, {LAlt Down}{vkE8}
+            }
+        }	
+        Sleep, 10
+    }
+return
 
-;Forward by 5sec
-Numpad6::
-NumpadRight::
-gosub, forwardbysec
+; The '*' is CRITICAL. It tells AHK to fire even while Alt is held down.
+;Backward by Sec else Left arrow key
+*Numpad4::
+*NumpadLeft::
+    if GetKeyState("Numpad5", "P") || GetKeyState("NumpadClear", "P") {
+		if !GetKeyState("Alt") {
+            Send, {LAlt Down}{vkE8} 
+        }
+        Send, {Left} 
+    } else {                                                          
+        gosub, backwardbysec
+    }     
+return
+
+;Forward by Sec else Right arrow key
+*Numpad6::
+*NumpadRight::
+    if GetKeyState("Numpad5", "P") || GetKeyState("NumpadClear", "P") {
+		if !GetKeyState("Alt") {
+            Send, {LAlt Down}{vkE8} 
+        }
+        Send, {Right}   
+    } else {
+        gosub, forwardbysec
+    }
+return
+
+;Backspace else Tab
+*BS::       
+    if GetKeyState("Numpad5", "P") || GetKeyState("NumpadClear", "P") {	 
+		if !GetKeyState("Alt") {
+            Send, {LAlt Down}{vkE8} ; vkE8 masks the Alt-code trap
+        }        
+        Send, {Blind}{Tab}
+    } else {
+        ; Normal Backspace behavior
+        Send, {Blind}{Backspace}
+    }
+return			
+	
+
+;Scrip Play/Pause else Delete
+*NumpadDel::
+*NumpadDot::
+	Suspend, Permit
+	if GetKeyState("Numpad5", "P") || GetKeyState("NumpadClear", "P") {
+		if !GetKeyState("Alt") {
+            Send, {LAlt Down}{vkE8} 
+        }
+        Send, {Del}
+    } else {
+		Suspend, Toggle
+		SoundBeep, 500, 500
+		If (A_IsSuspended)
+		{
+			Menu, Tray, Icon, %A_ScriptDir%\bin\icons\suspended.ico,,1
+		} else {
+			gosub, iconchanger
+		}
+    }
+return
+
+;Volume Down else Down arrow key
+*Numpad2::
+*NumpadDown::
+    if GetKeyState("Numpad5", "P") || GetKeyState("NumpadClear", "P") {
+		if !GetKeyState("Alt") {
+            Send, {LAlt Down}{vkE8} 
+        }
+        Send, {Down} 
+    } else {
+        Send, {Volume_Down}
+    }
+return
+
+;Volume Up else Up arrow key
+*Numpad8::
+*NumpadUp::
+    if GetKeyState("Numpad5", "P") || GetKeyState("NumpadClear", "P") {
+		if !GetKeyState("Alt") {
+            Send, {LAlt Down}{vkE8} 
+        }
+        Send, {Up} 
+    } else {
+        Send, {Volume_up}
+    }
 return
 
 ;Undo and Redo
@@ -2321,11 +2424,6 @@ Numpad7::
 NumpadHome::
 gosub, incredo
 return
-
-;new things pasted from here
-;Volume up
-Numpad8::Volume_up
-NumpadUp::Volume_up
 
 ;Aimp Pause/Play
 Numpad9::
@@ -2412,21 +2510,6 @@ KeyPressCount := 0
 SetTimer, fKeyPressMonitor, Off
 Tooltip,
 return
-
-;Scrip Play/Pause
-NumpadDel::
-NumpadDot::
-Suspend, Toggle
-SoundBeep, 500, 500
-If (A_IsSuspended)
-{
-	Menu, Tray, Icon, %A_ScriptDir%\bin\icons\suspended.ico,,1
-}
-Else
-{
-	gosub, iconchanger
-}
-Return
 ;--------------------------------------------------------------------------------------------------------------------
 #IF
 ;--------------------------------------------------------------------------------------------------------------------
