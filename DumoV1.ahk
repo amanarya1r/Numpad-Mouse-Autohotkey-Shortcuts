@@ -102,12 +102,18 @@ if (spustate == 0){
 Menu, copycutstate, Add, Copy || Cut, copycutchoose
 Menu, copycutstate, Add, CopyLinkOneNote || Copy || Cut, copylinkcopycutchoose
 Menu, copycutstate, Add, Copy Audio || Copy Screenshot, copyaudioorscreenshotchoose
-if (cpcstate == 0){
+if (cpcstate == 0) and (cacstate == 0){
 	Menu, copycutstate, check, Copy || Cut
 	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
-} else if (cpcstate == 1) {
+	Menu, copycutstate, uncheck, Copy Audio || Copy Screenshot
+} else if (cpcstate == 1) and (cacstate == 0) {
 	Menu, copycutstate, uncheck, Copy || Cut
 	Menu, copycutstate, check, CopyLinkOneNote || Copy || Cut
+	Menu, copycutstate, uncheck, Copy Audio || Copy Screenshot
+} else if (cpcstate == 0) and (cacstate == 1) {
+	Menu, copycutstate, uncheck, Copy || Cut
+	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
+	Menu, copycutstate, check, Copy Audio || Copy Screenshot
 }
 ;---------------------------------------------------------------------------------------; paste, plain paste 4 onenote
 Menu, pastestate, Add, Paste, pasteon1press 
@@ -1192,6 +1198,7 @@ copycutchoose:
 	cpcstate:=0
 	cacstate:=0
 	saveSetting("cpcstate", cpcstate, settingsFile)
+	saveSetting("cacstate", cacstate, settingsFile)
 	Menu, copycutstate, check, Copy || Cut
 	Menu, copycutstate, uncheck, Copy Audio || Copy Screenshot
 	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
@@ -1208,6 +1215,7 @@ copylinkcopycutchoose:
 	cpcstate:=1
 	cacstate:=0
 	saveSetting("cpcstate", cpcstate, settingsFile)
+	saveSetting("cacstate", cacstate, settingsFile)
 	Menu, copycutstate, uncheck, Copy || Cut
 	Menu, copycutstate, check, Copy Audio || Copy Screenshot
 	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
@@ -1222,8 +1230,10 @@ Return
 
 copyaudioorscreenshotchoose:
 {
+	cpcstate:=0
 	cacstate:=1
 	saveSetting("cacstate", cacstate, settingsFile)
+	saveSetting("cpcstate", cpcstate, settingsFile)
 	Menu, copycutstate, uncheck, Copy || Cut
 	Menu, copycutstate, uncheck, CopyLinkOneNote || Copy || Cut
 	Menu, copycutstate, check, Copy Audio || Copy Screenshot
@@ -2118,7 +2128,7 @@ else if (cpcstate = 1) And (cacstate=0)
 				Sleep 400
 			}
     }
-Else
+else if (cpcstate = 0) And (cacstate=1)
 {
 	If (KeyPressCount = 1)
 		{
